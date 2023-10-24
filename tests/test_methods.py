@@ -5,7 +5,7 @@
 """This is a sample python file for testing functions from the source code."""
 from __future__ import annotations
 
-from python_package.hello_world import hello_world
+from db_chat.hello_world import hello_world
 
 
 def hello_test():
