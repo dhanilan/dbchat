@@ -1,1 +1,2 @@
-This directoy stores each Python Package.
+# Chat with existing Database
+LLM powered
