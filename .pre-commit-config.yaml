@@ -29,13 +29,6 @@ repos:
       - id: pyupgrade
         args: [--py37-plus]
 
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v1.2.5
-    hooks:
-      - id: pycln
-        args: [--config=pyproject.toml]
-        stages: [manual]
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
