@@ -2,7 +2,7 @@
 from __future__ import annotations
 from enum import Enum
 
-# from .mappings import table_mapping, field_mappings, relationships, Relationship
+from db_chat.sql_builder.mappings import table_mapping, field_mappings, relationships, Relationship
 
 
 class FilterOperator(str, Enum):
@@ -188,10 +188,10 @@ class SQLBuilder:
                 all_relationships.append(mapping["relationships"])
 
         added_joins = set()
-        for relationships in all_relationships:
+        for relationship_objs in all_relationships:
             prev_relationship = None
             relationship_name: str
-            for relationship_name in relationships:
+            for relationship_name in relationship_objs:
                 if relationship_name not in added_joins:
                     rel: Relationship
                     for rel in self.relationships:
