@@ -1,20 +1,31 @@
+"""Module to represent schema """
+
+from __future__ import annotations
+import dataclasses
+
+
+@dataclasses.dataclass
 class Relationship:
-    def __init__(self, name: str, table1: str, field1: str, table2: str, field2: str):
-        self.name = name
-        self.table1 = table1
-        self.field1 = field1
-        self.table2 = table2
-        self.field2 = field2
+    """
+    Class to hold a relationship between two tables
+    """
+
+    name: str
+    table1: str
+    field1: str
+    table2: str
+    field2: str
 
 
+@dataclasses.dataclass
 class UserFriendlyMappings:
-    def __init__(self, fields: list[str], metrics: list[str], aggregate_metrics: list[str]):
-        self.fields = fields
-        self.metrics = metrics
-        self.aggregate_metrics = aggregate_metrics
+    """
+    User friendly Names
+    """
 
-    def to_dict(self):
-        return {"fields": self.fields, "metrics": self.metrics, "aggregate_metrics": self.aggregate_metrics}
+    fields: list[str]
+    metrics: list[str]
+    aggregate_metrics: list[str]
 
 
 table_mapping = {
