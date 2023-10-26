@@ -1,5 +1,6 @@
 """This is a Sample Python file."""
 from __future__ import annotations
+import dataclasses
 from enum import Enum
 
 from db_chat.sql_builder.mappings import table_mapping, field_mappings, relationships, Relationship
@@ -29,6 +30,7 @@ def get_operator_sql(op_type: FilterOperator):
     return operators.get(f"{op_type.value}", "")
 
 
+@dataclasses.dataclass
 class Filter:
     """
     class to represent a filter
@@ -74,6 +76,7 @@ def _get_filter_rhs(filter_obj: Filter):
         return f"'{filter_obj.value}'"
 
 
+@dataclasses.dataclass
 class SortOrder:
     """
     Class to hold the sort direction and field
@@ -83,6 +86,7 @@ class SortOrder:
     direction: str
 
 
+@dataclasses.dataclass
 class SQLQuery:
     """
     Class to encapsulate the SQL query
@@ -106,7 +110,10 @@ class SQLBuilder:
         self.field_mappings = field_mappings
         self.relationships = relationships
 
-    def _build_sql(self, query: SQLQuery) -> str:
+    def build_sql(self, query: SQLQuery) -> str:
+        """
+        Build out the sql
+        """
         table = query.table
         fields = query.fields
         filters = query.filters

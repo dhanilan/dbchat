@@ -87,6 +87,7 @@ def test_simple_field_selection():
     query = {"table": "distribution_metrics", "fields": ["channel_id"]}
 
     query = SQLQuery(**query)
+    # query.fields =
     sql = builder.build_sql(query)
     assert sql == "SELECT viewership_metrics_day_level.dim_channel_id AS channel_id FROM viewership_metrics_day_level"
 
