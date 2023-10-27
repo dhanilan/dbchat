@@ -2,6 +2,7 @@
 from __future__ import annotations
 import dataclasses
 from enum import Enum
+from typing import Optional
 
 from db_chat.sql_builder.mappings import table_mapping, field_mappings, relationships, Relationship
 
@@ -94,10 +95,10 @@ class SQLQuery:
 
     table: str
     fields: list[str]
-    filters: list[Filter] = []
+    filters: list[Filter] = dataclasses.field(default_factory=lambda: [])
     sort: SortOrder = None
     limit: int = None
-    offset: int = 0
+    offset: int = None
 
 
 class SQLBuilder:
