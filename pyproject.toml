@@ -42,13 +42,13 @@ test = [
     "shellcheck-py==0.9.0.2",
 ]
 
-[project.urls]
-Documentation = "https://github.com/microsoft/python-package-template/tree/main#readme"
-Source = "https://github.com/microsoft/python-package-template"
-Tracker = "https://github.com/microsoft/python-package-template/issues"
+# [project.urls]
+# Documentation = "https://github.com/microsoft/python-package-template/tree/main#readme"
+# Source = "https://github.com/microsoft/python-package-template"
+# Tracker = "https://github.com/microsoft/python-package-template/issues"
 
 [tool.flit.module]
-name = "python_package"
+name = "db_chat"
 
 [tool.bandit]
 exclude_dirs = ["build", "dist", "tests", "scripts"]
