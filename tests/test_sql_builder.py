@@ -1,4 +1,11 @@
-from db_chat.sql_builder.sql_builder import SQLBuilder, Filter, Relationship, SortOrder, SQLQuery, FilterOperator
+from db_chat.sql_builder.sql_builder import (
+    SQLBuilder,
+    Filter,
+    Relationship,
+    SortOrder,
+    Query as SQLQuery,
+    FilterOperator,
+)
 
 # Sample Configuration for the Test Cases
 table_mapping = {

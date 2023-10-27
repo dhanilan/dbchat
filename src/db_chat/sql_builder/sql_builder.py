@@ -1,25 +1,11 @@
 """This is a Sample Python file."""
 from __future__ import annotations
-import dataclasses
-from enum import Enum
-from typing import Optional
+from db_chat.sql_builder.Filter import Filter
+from db_chat.sql_builder.FilterOperator import FilterOperator
+from db_chat.sql_builder.Query import Query
+from db_chat.sql_builder.SortOrder import SortOrder
 
-from db_chat.sql_builder.mappings import table_mapping, field_mappings, relationships, Relationship
-
-
-class FilterOperator(str, Enum):
-    """
-    class representing Filter operator
-    """
-
-    eq = "eq"
-    neq = "neq"
-    gt = "gt"
-    lt = "lt"
-    gte = "gte"
-    lte = "lte"
-    like = "like"
-    in_ = "in"
+from db_chat.sql_builder.mappings import Relationship
 
 
 def get_operator_sql(op_type: FilterOperator):
@@ -29,17 +15,6 @@ def get_operator_sql(op_type: FilterOperator):
     operators = {"eq": "=", "neq": "<>", "gt": ">", "lt": "<", "gte": ">=", "lte": "<=", "like": "like", "in": "in"}
 
     return operators.get(f"{op_type.value}", "")
-
-
-@dataclasses.dataclass
-class Filter:
-    """
-    class to represent a filter
-    """
-
-    field: str
-    operator: FilterOperator
-    value: str
 
 
 # TODO: this is rubbish, fix it
@@ -77,41 +52,17 @@ def _get_filter_rhs(filter_obj: Filter):
         return f"'{filter_obj.value}'"
 
 
-@dataclasses.dataclass
-class SortOrder:
-    """
-    Class to hold the sort direction and field
-    """
-
-    field: str
-    direction: str
-
-
-@dataclasses.dataclass
-class SQLQuery:
-    """
-    Class to encapsulate the SQL query
-    """
-
-    table: str
-    fields: list[str]
-    filters: list[Filter] = dataclasses.field(default_factory=lambda: [])
-    sort: SortOrder = None
-    limit: int = None
-    offset: int = None
-
-
 class SQLBuilder:
     """
     The SQL Builder which builds and emits the SQL
     """
 
-    def __init__(self, table_mapping=table_mapping, field_mappings=field_mappings, relationships=relationships):
+    def __init__(self, table_mapping, field_mappings, relationships):
         self.table_mapping = table_mapping
         self.field_mappings = field_mappings
         self.relationships = relationships
 
-    def build_sql(self, query: SQLQuery) -> str:
+    def build_sql(self, query: Query) -> str:
         """
         Build out the sql
         """
