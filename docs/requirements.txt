@@ -2,3 +2,4 @@ sphinx
 sphinx-copybutton
 sphinx-rtd-theme
 sqlalchemy
+pytest-xdist

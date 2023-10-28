@@ -1,23 +1,26 @@
 from __future__ import annotations
 from db_chat.sql_builder.Query import Query
 
-from db_chat.sql_builder.sqlalchemy_query_builder import SQLAlchemyQueryBuilder, Schema
+from db_chat.sql_builder.sqlalchemy_query_builder import Column, SQLAlchemyQueryBuilder, Schema, Table
+
 
 schema: Schema = Schema(
     tables={
-        "users": {
-            "friendly_name": "users",
-            "name": "users",
-            "columns": {
-                "name": {"friendly_name": "name", "name": "name", "relationships": []},
-                "id": {"friendly_name": "id", "name": "id", "relationships": []},
-                "email": {"friendly_name": "email", "name": "email", "relationships": []},
-            },
-            "relationships": [],
-        }
+        "users": Table(
+            name="users",
+            friendly_name="users",
+            columns=[
+                Column(name="name", friendly_name="name", relationships=[]),
+                Column(name="id", friendly_name="id", relationships=[]),
+                Column(name="email", friendly_name="email", relationships=[]),
+            ],
+            relationships=[],
+        )
     },
     relationships=[],
 )
+
+print(schema.tables["users"].columns[0].name)
 builder = SQLAlchemyQueryBuilder(schema)
 
 
@@ -36,4 +39,5 @@ def test_simple():
         offset=10,
     )
 
-    builder.build_query(query=query)
+    Sql = builder.build_query(query=query)
+    assert Sql == "SELECT name, email \nFROM users"

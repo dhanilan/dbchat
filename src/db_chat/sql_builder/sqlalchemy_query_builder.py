@@ -75,7 +75,8 @@ class SQLAlchemyQueryBuilder:
         # # OFFSET clause
         # sql = self._build_offset_clause(offset, sql)
 
-        sql = statement.to_string()
+        sql = str(statement.compile())
+        print(sql)
         return sql
 
     def _build_select_clause(self, query: Query):
@@ -85,7 +86,7 @@ class SQLAlchemyQueryBuilder:
 
         sa_table = self._get_table_from_mapping(query.table)
         select_fields = self._get_select_fields(query.fields)
-        statement = select(select_fields).select_from(sa_table)
+        statement = select(*select_fields).select_from(sa_table)
 
         return statement
 
@@ -98,16 +99,13 @@ class SQLAlchemyQueryBuilder:
         schema_table = self.schema.tables[table_name]
 
         # get the columns
-        sa_columns = ()
+        sa_columns = []
         schema_column: Column
         for schema_column in schema_table.columns:
             sa_column = column(schema_column.name)
-            sa_columns += sa_column
+            sa_columns.append(sa_column)
 
-        sa_table = table(
-            schema_table.name,
-            sa_columns,
-        )
+        sa_table = table(schema_table.name, *sa_columns)
 
         return sa_table
 
@@ -117,10 +115,10 @@ class SQLAlchemyQueryBuilder:
         """
 
         # get the columns
-        sa_columns = ()
+        sa_columns = []
         field: str
         for field in fields:
             sa_column = column(field)
-            sa_columns += sa_column
+            sa_columns.append(sa_column)
 
         return sa_columns
