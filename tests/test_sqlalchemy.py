@@ -25,7 +25,7 @@ schema: Schema = Schema(
                 Column(name="user_id", friendly_name="user_id"),
                 Column(name="title", friendly_name="title"),
                 Column(name="body", friendly_name="body"),
-                Column(name="user_name", friendly_name="user name", relationships=["post_user"]),
+                Column(name="user_name", friendly_name="user name", relationships=["post_user"], related_field="name"),
             ],
         ),
     },
@@ -52,7 +52,7 @@ def test_simple():
     )
 
     Sql = builder.build_query(query=query)
-    assert Sql == "SELECT name, email \nFROM users"
+    assert Sql == "SELECT users.name, users.email \nFROM users"
 
 
 def test_simple_join():
@@ -66,4 +66,7 @@ def test_simple_join():
     )
 
     Sql = builder.build_query(query=query)
-    assert Sql == "SELECT name, email, posts \nFROM users JOIN posts  AS post_user ON users.id = post_user.user_id"
+    assert (
+        Sql
+        == "SELECT posts.title, posts.body, posts_post_user.name AS user_name \nFROM posts JOIN users AS posts_post_user ON posts.user_id = posts_post_user.id"
+    )
