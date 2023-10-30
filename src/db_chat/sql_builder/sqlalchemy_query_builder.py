@@ -90,6 +90,8 @@ class SQLAlchemyQueryBuilder:
         sa_table = self._get_table_from_mapping(query.table)
         select_columns = []
         from_clause = sa_table
+        joined_paths = []
+        joined_tables: dict = {}
 
         query_field: str | ComplexField
         for query_field in query.fields:
@@ -106,31 +108,42 @@ class SQLAlchemyQueryBuilder:
                 select_columns.append(sa_table.columns.get(field_column.name))
 
             if field_column.relationships:
+                previous_table = sa_table
                 for relationship_name in field_column.relationships:
                     relationship_object: Relationship = self._get_relationship_by_name(relationship_name)
                     if relationship_object.table1 == current_table_name:
-                        join_to_table = self._get_table_from_mapping(table_name=relationship_object.table2)
-                        source_column = from_clause.columns.get(relationship_object.field1)
+                        target_table_name = relationship_object.table2
+                        source_field_name = relationship_object.field1
                         target_field_name = relationship_object.field2
 
                     elif relationship_object.table2 == current_table_name:
                         target_table_name = relationship_object.table1
-                        join_to_table = self._get_table_from_mapping(table_name=target_table_name)
-                        source_column = from_clause.columns.get(relationship_object.field2)
+                        source_field_name = relationship_object.field2
                         target_field_name = relationship_object.field1
 
                     else:
                         raise ValueError(f"Unknown table in relationship: {relationship_name}")
 
                     current_alias += "_" + relationship_object.name
-                    join_to_alias = alias(join_to_table, current_alias)
-                    target_column = join_to_alias.columns.get(target_field_name)
 
-                    join_condition = source_column == target_column
-                    from_clause = from_clause.join(join_to_alias, join_condition)
-                    select_columns.append(
-                        join_to_alias.columns.get(field_column.related_field).label(field_column.name)
-                    )
+                    if current_alias not in joined_paths:
+                        join_to_table = self._get_table_from_mapping(table_name=target_table_name)
+                        source_join_column = previous_table.columns.get(source_field_name)
+                        join_to_aliased_table = alias(join_to_table, current_alias)
+                        target_join_column = join_to_aliased_table.columns.get(target_field_name)
+                        join_condition = source_join_column == target_join_column
+                        from_clause = from_clause.join(join_to_aliased_table, join_condition)
+                        joined_paths.append(current_alias)
+                        joined_tables[current_alias] = join_to_aliased_table
+                    else:
+                        join_to_aliased_table = joined_tables[current_alias]
+
+                    current_table_name = target_table_name
+                    previous_table = join_to_aliased_table
+
+                select_columns.append(
+                    join_to_aliased_table.columns.get(field_column.related_field).label(field_column.name)
+                )
 
         statement = select(*select_columns).select_from(from_clause)
 
