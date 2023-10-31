@@ -1,4 +1,6 @@
 from __future__ import annotations
+from db_chat.sql_builder.Filter import Filter
+from db_chat.sql_builder.FilterOperator import FilterOperator
 from db_chat.sql_builder.Query import Query
 
 from db_chat.sql_builder.sqlalchemy_query_builder import Column, SQLAlchemyQueryBuilder, Schema, Table
@@ -126,3 +128,61 @@ def test_two_level_join():
         Sql
         == "SELECT comments.body, comments_post_comments_post_user.name AS comment_user_name \nFROM comments JOIN posts AS comments_post_comments ON comments.post_id = comments_post_comments.id JOIN users AS comments_post_comments_post_user ON comments_post_comments.user_id = comments_post_comments_post_user.id"
     )
+
+
+def test_simple_filter():
+    """
+    Simple filter
+    """
+    query = Query(
+        table="users",
+        fields=["name", "email"],
+        filters=[Filter(field="name", operator=FilterOperator.eq, value="John")],
+        sort=["name"],
+        limit=10,
+        offset=10,
+    )
+    sql = builder.build_query(query=query)
+    assert sql == "SELECT users.name, users.email \nFROM users \nWHERE users.name = :name_1"
+
+
+# filters with joins
+def test_filter_with_join():
+    """
+    Filter with join
+    """
+    query = Query(
+        table="posts",
+        fields=["title", "body", "user_name"],
+        filters=[Filter(field="user_name", operator=FilterOperator.eq, value="John")],
+    )
+    sql = builder.build_query(query=query)
+    assert (
+        sql
+        == "SELECT posts.title, posts.body, posts_post_user.name AS user_name \nFROM posts JOIN users AS posts_post_user ON posts.user_id = posts_post_user.id \nWHERE posts_post_user.name = :name_1"
+    )
+
+
+# aggregates and functions
+
+
+# group by
+def test_group_by():
+    """
+    Group by
+    """
+    query = Query(
+        table="posts",
+        fields=["title", "body", "user_name"],
+        group_by=["title", "body", "user_name"],
+    )
+    sql = builder.build_query(query=query)
+    assert (
+        sql
+        == "SELECT posts.title, posts.body, posts_post_user.name AS user_name \nFROM posts JOIN users AS posts_post_user ON posts.user_id = posts_post_user.id GROUP BY posts.title, posts.body, posts_post_user.name"
+    )
+
+
+# Having clause
+
+# or and not and and conditions in joins

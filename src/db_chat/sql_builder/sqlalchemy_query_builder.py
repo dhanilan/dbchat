@@ -3,7 +3,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
-from sqlalchemy import alias, select, table, column
+from sqlalchemy import alias, and_, select, table, column
+from db_chat.sql_builder.Filter import Filter
+from db_chat.sql_builder.FilterOperator import FilterOperator
 
 from db_chat.sql_builder.Query import ComplexField, Query
 from db_chat.sql_builder.mappings import Relationship
@@ -89,10 +91,75 @@ class SQLAlchemyQueryBuilder:
 
         sa_table = self._get_table_from_mapping(query.table)
         select_columns = []
-        from_clause = sa_table
         joined_paths = []
         joined_tables: dict = {}
 
+        from_clause = self._build_select_clause_for_fields(query, sa_table, select_columns, joined_paths, joined_tables)
+
+        from_clause, filter_clauses = self._build_filter_clause(
+            query, sa_table, joined_paths, joined_tables, from_clause
+        )
+
+        from_clause, group_by_clauses = self._build_group_by_columns(
+            query, sa_table, joined_paths, joined_tables, from_clause
+        )
+
+        statement = select(*select_columns).select_from(from_clause)
+
+        if len(filter_clauses) > 0:
+            statement = statement.where(and_(*filter_clauses))
+
+        if len(group_by_clauses) > 0:
+            statement = statement.group_by(*group_by_clauses)
+
+        return statement
+
+    def _build_group_by_columns(self, query: Query, sa_table, joined_paths, joined_tables, from_clause):
+        group_by_columns = []
+        for group_by_field in query.group_by:
+            group_by_column = self._get_field_from_table(query.table, group_by_field)
+
+            if not group_by_column.relationships:
+                sa_grouping_column = sa_table.columns.get(group_by_column.name)
+            else:
+                from_clause, join_to_aliased_table = self._build_join_for_relationship(
+                    sa_table, from_clause, joined_paths, joined_tables, group_by_column, query.table, query.table
+                )
+                sa_grouping_column = join_to_aliased_table.columns.get(group_by_column.related_field)
+
+            group_by_columns.append(sa_grouping_column)
+        return from_clause, group_by_columns
+
+    def _build_filter_clause(self, query: Query, sa_table, joined_paths, joined_tables, from_clause):
+        filter_clauses = []
+        for filter_obj in query.filters:
+            filter_column = self._get_field_from_table(query.table, filter_obj.field)
+
+            if not filter_column.relationships:
+                sa_filter_column = sa_table.columns.get(filter_column.name)
+            else:
+                from_clause, join_to_aliased_table = self._build_join_for_relationship(
+                    sa_table, from_clause, joined_paths, joined_tables, filter_column, query.table, query.table
+                )
+                sa_filter_column = join_to_aliased_table.columns.get(filter_column.related_field)
+            filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_filter_column)
+            filter_clauses.append(filter_clause)
+        return from_clause, filter_clauses
+
+    def _get_filter_condition_for_operator(self, filter_obj: Filter, sa_filter_column):
+        # switch case for operators
+        operator = filter_obj.operator.value
+
+        filter_clause = {
+            f"{FilterOperator.eq.value}": lambda x, y: x == y,
+        }.get(
+            operator
+        )(sa_filter_column, filter_obj.value)
+
+        return filter_clause
+
+    def _build_select_clause_for_fields(self, query, sa_table, select_columns, joined_paths, joined_tables):
+        from_clause = sa_table
         query_field: str | ComplexField
         for query_field in query.fields:
             field_name: str = query_field
@@ -108,46 +175,52 @@ class SQLAlchemyQueryBuilder:
                 select_columns.append(sa_table.columns.get(field_column.name))
 
             if field_column.relationships:
-                previous_table = sa_table
-                for relationship_name in field_column.relationships:
-                    relationship_object: Relationship = self._get_relationship_by_name(relationship_name)
-                    if relationship_object.table1 == current_table_name:
-                        target_table_name = relationship_object.table2
-                        source_field_name = relationship_object.field1
-                        target_field_name = relationship_object.field2
-
-                    elif relationship_object.table2 == current_table_name:
-                        target_table_name = relationship_object.table1
-                        source_field_name = relationship_object.field2
-                        target_field_name = relationship_object.field1
-
-                    else:
-                        raise ValueError(f"Unknown table in relationship: {relationship_name}")
-
-                    current_alias += "_" + relationship_object.name
-
-                    if current_alias not in joined_paths:
-                        join_to_table = self._get_table_from_mapping(table_name=target_table_name)
-                        source_join_column = previous_table.columns.get(source_field_name)
-                        join_to_aliased_table = alias(join_to_table, current_alias)
-                        target_join_column = join_to_aliased_table.columns.get(target_field_name)
-                        join_condition = source_join_column == target_join_column
-                        from_clause = from_clause.join(join_to_aliased_table, join_condition)
-                        joined_paths.append(current_alias)
-                        joined_tables[current_alias] = join_to_aliased_table
-                    else:
-                        join_to_aliased_table = joined_tables[current_alias]
-
-                    current_table_name = target_table_name
-                    previous_table = join_to_aliased_table
+                from_clause, join_to_aliased_table = self._build_join_for_relationship(
+                    sa_table, from_clause, joined_paths, joined_tables, field_column, current_table_name, current_alias
+                )
 
                 select_columns.append(
                     join_to_aliased_table.columns.get(field_column.related_field).label(field_column.name)
                 )
 
-        statement = select(*select_columns).select_from(from_clause)
+        return from_clause
 
-        return statement
+    def _build_join_for_relationship(
+        self, sa_table, from_clause, joined_paths, joined_tables, field_column, current_table_name, current_alias
+    ):
+        previous_table = sa_table
+        for relationship_name in field_column.relationships:
+            relationship_object: Relationship = self._get_relationship_by_name(relationship_name)
+            if relationship_object.table1 == current_table_name:
+                target_table_name = relationship_object.table2
+                source_field_name = relationship_object.field1
+                target_field_name = relationship_object.field2
+
+            elif relationship_object.table2 == current_table_name:
+                target_table_name = relationship_object.table1
+                source_field_name = relationship_object.field2
+                target_field_name = relationship_object.field1
+
+            else:
+                raise ValueError(f"Unknown table in relationship: {relationship_name}")
+
+            current_alias += "_" + relationship_object.name
+
+            if current_alias not in joined_paths:
+                join_to_table = self._get_table_from_mapping(table_name=target_table_name)
+                source_join_column = previous_table.columns.get(source_field_name)
+                join_to_aliased_table = alias(join_to_table, current_alias)
+                target_join_column = join_to_aliased_table.columns.get(target_field_name)
+                join_condition = source_join_column == target_join_column
+                from_clause = from_clause.join(join_to_aliased_table, join_condition)
+                joined_paths.append(current_alias)
+                joined_tables[current_alias] = join_to_aliased_table
+            else:
+                join_to_aliased_table = joined_tables[current_alias]
+
+            current_table_name = target_table_name
+            previous_table = join_to_aliased_table
+        return from_clause, join_to_aliased_table
 
     def _get_relationship_by_name(self, relationship_name):
         return next((rel for rel in self.schema.relationships if rel.name == relationship_name), None)

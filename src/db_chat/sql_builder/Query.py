@@ -26,6 +26,7 @@ class Query:
     table: str
     fields: list[str | ComplexField] = dataclasses.field(default_factory=lambda: [])
     filters: list[Filter] = dataclasses.field(default_factory=lambda: [])
+    group_by: list[str | ComplexField] = dataclasses.field(default_factory=lambda: [])
     sort: SortOrder = None
     limit: int = None
     offset: int = None
