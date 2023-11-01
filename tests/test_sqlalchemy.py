@@ -1,7 +1,7 @@
 from __future__ import annotations
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
-from db_chat.sql_builder.Query import Query
+from db_chat.sql_builder.Query import Query, Expression, Functions
 
 from db_chat.sql_builder.sqlalchemy_query_builder import Column, SQLAlchemyQueryBuilder, Schema, Table
 from db_chat.sql_builder.mappings import Relationship
@@ -27,6 +27,7 @@ schema: Schema = Schema(
                 Column(name="user_id", friendly_name="user_id"),
                 Column(name="title", friendly_name="title"),
                 Column(name="body", friendly_name="body"),
+                Column(name="likes", friendly_name="likes"),
                 Column(name="user_name", friendly_name="user name", relationships=["post_user"], related_field="name"),
                 Column(
                     name="user_email", friendly_name="user email", relationships=["post_user"], related_field="email"
@@ -164,6 +165,25 @@ def test_filter_with_join():
 
 
 # aggregates and functions
+def test_simple_aggregate():
+    """
+    Simple aggregate
+    """
+    query = Query(
+        table="posts",
+        fields=[Expression(func="SUM", params=["likes"], label="total_likes")],
+        filters=[],
+        sort=["title"],
+        limit=10,
+        offset=10,
+    )
+    sql = builder.build_query(query=query)
+    assert sql == "SELECT sum(posts.likes) AS total_likes \nFROM posts"
+
+
+# filters with aggregates and functions
+
+# filters with constants and functions
 
 
 # group by

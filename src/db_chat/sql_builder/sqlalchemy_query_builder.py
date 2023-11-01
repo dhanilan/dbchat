@@ -3,11 +3,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
-from sqlalchemy import alias, and_, select, table, column
+from sqlalchemy import alias, and_, select, table, column, TableClause, func
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
 
-from db_chat.sql_builder.Query import ComplexField, Query
+from db_chat.sql_builder.Query import Expression, Functions, Query
 from db_chat.sql_builder.mappings import Relationship
 
 
@@ -114,7 +114,7 @@ class SQLAlchemyQueryBuilder:
 
         return statement
 
-    def _build_group_by_columns(self, query: Query, sa_table, joined_paths, joined_tables, from_clause):
+    def _build_group_by_columns(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause):
         group_by_columns = []
         for group_by_field in query.group_by:
             group_by_column = self._get_field_from_table(query.table, group_by_field)
@@ -130,7 +130,7 @@ class SQLAlchemyQueryBuilder:
             group_by_columns.append(sa_grouping_column)
         return from_clause, group_by_columns
 
-    def _build_filter_clause(self, query: Query, sa_table, joined_paths, joined_tables, from_clause):
+    def _build_filter_clause(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause):
         filter_clauses = []
         for filter_obj in query.filters:
             filter_column = self._get_field_from_table(query.table, filter_obj.field)
@@ -158,13 +158,19 @@ class SQLAlchemyQueryBuilder:
 
         return filter_clause
 
-    def _build_select_clause_for_fields(self, query, sa_table, select_columns, joined_paths, joined_tables):
+    def _build_select_clause_for_fields(
+        self, query: Query, sa_table: TableClause, select_columns: list, joined_paths, joined_tables
+    ):
         from_clause = sa_table
-        query_field: str | ComplexField
+        query_field: str | Expression
         for query_field in query.fields:
             field_name: str = query_field
-            if isinstance(query_field, ComplexField):
-                field_name = query_field.name
+            if isinstance(query_field, Expression):
+                sa_expression_function = self._build_clause_for_expression(
+                    query, from_clause, query_field, sa_table, joined_paths, joined_tables
+                )
+                select_columns.append(sa_expression_function)
+                continue
 
             field_column = self._get_field_from_table(query.table, field_name)
 
@@ -185,8 +191,74 @@ class SQLAlchemyQueryBuilder:
 
         return from_clause
 
+    def _build_clause_for_expression(
+        self,
+        query: Query,
+        from_clause: TableClause,
+        expression: Expression,
+        sa_table: TableClause,
+        joined_paths,
+        joined_tables,
+    ):
+        function_parms = []
+
+        for func_param in expression.params:
+            if not self._is_expression(func_param):
+                # if not a expression check if it is a field of the table
+                is_field_of_table = self._is_field_of_table(func_param, query.table)
+                if is_field_of_table:
+                    field_column = self._get_field_from_table(query.table, func_param)
+                    if not field_column.relationships:
+                        function_parms.append(sa_table.columns.get(field_column.name))
+                    else:
+                        from_clause, join_to_aliased_table = self._build_join_for_relationship(
+                            sa_table,
+                            from_clause,
+                            joined_paths,
+                            joined_tables,
+                            field_column,
+                            query.table,
+                            query.table,
+                        )
+
+                        function_parms.append(
+                            join_to_aliased_table.columns.get(field_column.related_field).label(field_column.name)
+                        )
+                else:
+                    # if not a field of the table then it is a constant
+                    function_parms.append(func_param)
+
+        sa_function = self._get_sa_function(expression.func, function_parms, expression.label)
+
+        return sa_function
+
+    def _get_sa_function(self, func_name: str, function_parms: list, label: str):
+        sa_function = None
+        if func_name == Functions.SUM.value:
+            sa_function = func.sum(*function_parms)
+
+        if label:
+            sa_function = sa_function.label(label)
+
+        return sa_function
+
+    def _is_expression(self, input_str: str):
+        return not input_str.isalnum()
+
+    def _is_field_of_table(self, input_str: str, table_name: str):
+        if self._get_field_from_table(table_name, input_str) is not None:
+            return True
+        return False
+
     def _build_join_for_relationship(
-        self, sa_table, from_clause, joined_paths, joined_tables, field_column, current_table_name, current_alias
+        self,
+        sa_table: TableClause,
+        from_clause,
+        joined_paths: list,
+        joined_tables: dict,
+        field_column,
+        current_table_name,
+        current_alias,
     ):
         previous_table = sa_table
         for relationship_name in field_column.relationships:
