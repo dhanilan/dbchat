@@ -181,6 +181,22 @@ def test_simple_aggregate():
     assert sql == "SELECT sum(posts.likes) AS total_likes \nFROM posts"
 
 
+def test_aggregate_with_columns():
+    """
+    Aggregate with columns
+    """
+    query = Query(
+        table="posts",
+        fields=[Expression(func="SUM", params=["likes"], label="total_likes"), "title"],
+        filters=[],
+        sort=["title"],
+        limit=10,
+        offset=10,
+    )
+    sql = builder.build_query(query=query)
+    assert sql == "SELECT sum(posts.likes) AS total_likes, posts.title \nFROM posts"
+
+
 # filters with aggregates and functions
 
 # filters with constants and functions
