@@ -133,17 +133,25 @@ class SQLAlchemyQueryBuilder:
     def _build_filter_clause(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause):
         filter_clauses = []
         for filter_obj in query.filters:
-            filter_column = self._get_field_from_table(query.table, filter_obj.field)
+            if not self._is_expression(filter_obj.field):
+                filter_column = self._get_field_from_table(query.table, filter_obj.field)
 
-            if not filter_column.relationships:
-                sa_filter_column = sa_table.columns.get(filter_column.name)
+                if not filter_column.relationships:
+                    sa_filter_column = sa_table.columns.get(filter_column.name)
+                else:
+                    from_clause, join_to_aliased_table = self._build_join_for_relationship(
+                        sa_table, from_clause, joined_paths, joined_tables, filter_column, query.table, query.table
+                    )
+                    sa_filter_column = join_to_aliased_table.columns.get(filter_column.related_field)
+                filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_filter_column)
+                filter_clauses.append(filter_clause)
             else:
-                from_clause, join_to_aliased_table = self._build_join_for_relationship(
-                    sa_table, from_clause, joined_paths, joined_tables, filter_column, query.table, query.table
+                sa_expression = self._build_clause_for_expression(
+                    query, from_clause, filter_obj.field, sa_table, joined_paths, joined_tables
                 )
-                sa_filter_column = join_to_aliased_table.columns.get(filter_column.related_field)
-            filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_filter_column)
-            filter_clauses.append(filter_clause)
+                filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_expression)
+
+                filter_clauses.append(filter_clause)
         return from_clause, filter_clauses
 
     def _get_filter_condition_for_operator(self, filter_obj: Filter, sa_filter_column):
@@ -243,7 +251,16 @@ class SQLAlchemyQueryBuilder:
         return sa_function
 
     def _is_expression(self, input_str: str):
-        return not input_str.isalnum()
+        if type(input_str) is Expression:
+            return True
+        if "(" in input_str:
+            return True
+        if ")" in input_str:
+            return True
+        if "," in input_str:
+            return True
+
+        return False
 
     def _is_field_of_table(self, input_str: str, table_name: str):
         if self._get_field_from_table(table_name, input_str) is not None:

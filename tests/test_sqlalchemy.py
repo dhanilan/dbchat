@@ -198,6 +198,21 @@ def test_aggregate_with_columns():
 
 
 # filters with aggregates and functions
+def test_filters_with_aggregates():
+    """
+    Filters with aggregates
+    """
+    query = Query(
+        table="posts",
+        fields=["title"],
+        filters=[Filter(Expression(func="SUM", params=["likes"]), operator=FilterOperator.eq, value=10)],
+        sort=["title"],
+        limit=10,
+        offset=10,
+    )
+    sql = builder.build_query(query=query)
+    assert sql == "SELECT posts.title \nFROM posts \nWHERE sum(posts.likes) = :sum_1"
+
 
 # filters with constants and functions
 
