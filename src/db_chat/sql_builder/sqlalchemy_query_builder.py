@@ -3,7 +3,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
-from sqlalchemy import alias, and_, select, table, column, TableClause, func
+from sqlalchemy import Label, alias, and_, select, table, column, TableClause, func
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
 
@@ -96,13 +96,15 @@ class SQLAlchemyQueryBuilder:
 
         from_clause = self._build_select_clause_for_fields(query, sa_table, select_columns, joined_paths, joined_tables)
 
-        from_clause, filter_clauses = self._build_filter_clause(
+        from_clause, filter_clauses, sa_having_clauses = self._build_filter_clause(
             query, sa_table, joined_paths, joined_tables, from_clause
         )
 
         from_clause, group_by_clauses = self._build_group_by_columns(
-            query, sa_table, joined_paths, joined_tables, from_clause
+            query, sa_table, joined_paths, joined_tables, from_clause, select_columns
         )
+
+        self._append_non_having_clauses_to_group_by(select_columns, sa_having_clauses, group_by_clauses)
 
         statement = select(*select_columns).select_from(from_clause)
 
@@ -112,9 +114,21 @@ class SQLAlchemyQueryBuilder:
         if len(group_by_clauses) > 0:
             statement = statement.group_by(*group_by_clauses)
 
+        if sa_having_clauses and len(sa_having_clauses) > 0:
+            statement = statement.having(and_(*sa_having_clauses))
+
         return statement
 
-    def _build_group_by_columns(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause):
+    def _append_non_having_clauses_to_group_by(self, select_columns, sa_having_clauses, group_by_clauses):
+        select_columns_without_aggregates = [
+            select_column for select_column in select_columns if not self._is_sa_column_aggregate(select_column)
+        ]
+        if sa_having_clauses and len(sa_having_clauses) > 0:
+            group_by_clauses += select_columns_without_aggregates
+
+    def _build_group_by_columns(
+        self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause, select_columns
+    ):
         group_by_columns = []
         for group_by_field in query.group_by:
             group_by_column = self._get_field_from_table(query.table, group_by_field)
@@ -128,9 +142,41 @@ class SQLAlchemyQueryBuilder:
                 sa_grouping_column = join_to_aliased_table.columns.get(group_by_column.related_field)
 
             group_by_columns.append(sa_grouping_column)
+
+        # if the list of field has aggregation functions then add all the fields to the group by
+        has_aggregates = any(self._is_sa_column_aggregate(select_column) for select_column in select_columns)
+
+        if has_aggregates:
+            for select_column in [
+                select_column for select_column in select_columns if not self._is_sa_column_aggregate(select_column)
+            ]:
+                group_by_columns.append(select_column)
+
         return from_clause, group_by_columns
 
+    def _is_sa_column_aggregate(self, select_column):
+        return isinstance(select_column, Label) and isinstance(select_column.element, func.sum().__class__)
+
+    def _is_condition_has_aggregate(self, filter_clause):
+        if (
+            isinstance(filter_clause.right, func.sum().__class__)
+            or isinstance(filter_clause.right, func.avg().__class__)
+            or isinstance(filter_clause.right, func.min().__class__)
+            or isinstance(filter_clause.right, func.max().__class__)
+        ):
+            return True
+        if (
+            isinstance(filter_clause.left, func.sum().__class__)
+            or isinstance(filter_clause.left, func.avg().__class__)
+            or isinstance(filter_clause.left, func.min().__class__)
+            or isinstance(filter_clause.left, func.max().__class__)
+        ):
+            return True
+        return False
+
     def _build_filter_clause(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause):
+        sa_having_clauses = []
+
         filter_clauses = []
         for filter_obj in query.filters:
             if not self._is_expression(filter_obj.field):
@@ -144,15 +190,18 @@ class SQLAlchemyQueryBuilder:
                     )
                     sa_filter_column = join_to_aliased_table.columns.get(filter_column.related_field)
                 filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_filter_column)
-                filter_clauses.append(filter_clause)
+
             else:
-                sa_expression = self._build_clause_for_expression(
+                sa_filter_column = self._build_clause_for_expression(
                     query, from_clause, filter_obj.field, sa_table, joined_paths, joined_tables
                 )
-                filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_expression)
-
+                filter_clause = self._get_filter_condition_for_operator(filter_obj, sa_filter_column)
+            if not self._is_condition_has_aggregate(filter_clause):
                 filter_clauses.append(filter_clause)
-        return from_clause, filter_clauses
+            else:
+                sa_having_clauses.append(filter_clause)
+
+        return from_clause, filter_clauses, sa_having_clauses
 
     def _get_filter_condition_for_operator(self, filter_obj: Filter, sa_filter_column):
         # switch case for operators
@@ -251,7 +300,7 @@ class SQLAlchemyQueryBuilder:
         return sa_function
 
     def _is_expression(self, input_str: str):
-        if type(input_str) is Expression:
+        if isinstance(input_str, Expression):
             return True
         if "(" in input_str:
             return True

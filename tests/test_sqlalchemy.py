@@ -194,7 +194,7 @@ def test_aggregate_with_columns():
         offset=10,
     )
     sql = builder.build_query(query=query)
-    assert sql == "SELECT sum(posts.likes) AS total_likes, posts.title \nFROM posts"
+    assert sql == "SELECT sum(posts.likes) AS total_likes, posts.title \nFROM posts GROUP BY posts.title"
 
 
 # filters with aggregates and functions
@@ -211,7 +211,7 @@ def test_filters_with_aggregates():
         offset=10,
     )
     sql = builder.build_query(query=query)
-    assert sql == "SELECT posts.title \nFROM posts \nWHERE sum(posts.likes) = :sum_1"
+    assert sql == "SELECT posts.title \nFROM posts GROUP BY posts.title \nHAVING sum(posts.likes) = :sum_1"
 
 
 # filters with constants and functions
