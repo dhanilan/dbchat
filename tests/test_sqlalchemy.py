@@ -1,7 +1,7 @@
 from __future__ import annotations
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
-from db_chat.sql_builder.Query import Query, Expression, Functions
+from db_chat.sql_builder.Query import Query, Expression
 
 from db_chat.sql_builder.sqlalchemy_query_builder import Column, SQLAlchemyQueryBuilder, Schema, Table
 from db_chat.sql_builder.mappings import Relationship
@@ -198,6 +198,7 @@ def test_aggregate_with_columns():
 
 
 # filters with aggregates and functions
+# Having clause
 def test_filters_with_aggregates():
     """
     Filters with aggregates
@@ -233,7 +234,5 @@ def test_group_by():
         == "SELECT posts.title, posts.body, posts_post_user.name AS user_name \nFROM posts JOIN users AS posts_post_user ON posts.user_id = posts_post_user.id GROUP BY posts.title, posts.body, posts_post_user.name"
     )
 
-
-# Having clause
 
 # or and not and and conditions in joins

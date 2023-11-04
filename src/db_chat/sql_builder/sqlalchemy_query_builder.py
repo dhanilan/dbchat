@@ -1,48 +1,14 @@
 """     Query Builder that builds SQL Alchmey Query """
 
 from __future__ import annotations
-from dataclasses import dataclass
-import dataclasses
+
+from db_chat.sql_builder.schema import Column, Schema, Table
 from sqlalchemy import Label, alias, and_, select, table, column, TableClause, func
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
 
 from db_chat.sql_builder.Query import Expression, Functions, Query
 from db_chat.sql_builder.mappings import Relationship
-
-
-@dataclass
-class Schema:
-    """
-    Schema
-    """
-
-    tables: dict[str, Table]
-    relationships: list[Relationship]
-
-
-@dataclass
-class Table:
-    """
-    Table
-    """
-
-    friendly_name: str
-    name: str
-    columns: list[Column]
-    relationships: list[str] = dataclasses.field(default_factory=lambda: [])
-
-
-@dataclass
-class Column:
-    """
-    Column
-    """
-
-    friendly_name: str
-    name: str
-    relationships: list[str] = dataclasses.field(default_factory=lambda: [])
-    related_field: str = None
 
 
 class SQLAlchemyQueryBuilder:
