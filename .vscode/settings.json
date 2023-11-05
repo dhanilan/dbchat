@@ -31,21 +31,11 @@
             "previewLimit": 50,
             "server": "localhost",
             "port": 5432,
-            "askForPassword": true,
             "driver": "PostgreSQL",
-            "name": "local",
-            "database": "dbchatdb",
-            "username": "dbchatuser"
-        },
-        {
-            "previewLimit": 50,
-            "server": "host.containerhelper.io",
-            "port": 5432,
-            "askForPassword": true,
-            "driver": "PostgreSQL",
-            "name": "dbchat",
-            "database": "dbchatdb",
-            "username": "dbchatuser"
+            "name": "Test",
+            "database": "postgres",
+            "username": "postgres",
+            "password": "postgres"
         }
     ]
 }
