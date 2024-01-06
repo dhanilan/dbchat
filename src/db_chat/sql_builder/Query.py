@@ -2,11 +2,44 @@
 from __future__ import annotations
 import dataclasses
 
-from db_chat.sql_builder.Filter import Filter
-from db_chat.sql_builder.SortOrder import SortOrder
-
 
 from enum import Enum
+
+
+@dataclasses.dataclass
+class SortOrder:
+    """
+    Class to hold the sort direction and field
+    """
+
+    field: str
+    direction: str
+
+
+class FilterOperator(str, Enum):
+    """
+    class representing Filter operator
+    """
+
+    eq = "eq"
+    neq = "neq"
+    gt = "gt"
+    lt = "lt"
+    gte = "gte"
+    lte = "lte"
+    like = "like"
+    in_ = "in"
+
+
+@dataclasses.dataclass
+class Filter:
+    """
+    class to represent a filter
+    """
+
+    field: any
+    operator: FilterOperator
+    value: str
 
 
 class Functions(str, Enum):
@@ -45,3 +78,12 @@ class Query:
     sort: SortOrder = None
     limit: int = None
     offset: int = None
+
+    def __init__(self, **kwargs):
+        self.table = kwargs.get("table")
+        self.fields = kwargs.get("fields")
+        self.filters = [Filter(**filter_obj) for filter_obj in kwargs.get("filters")]
+        self.group_by = kwargs.get("group_by")
+        self.sort = SortOrder(**kwargs.get("sort"))
+        self.limit = kwargs.get("limit")
+        self.offset = kwargs.get("offset")
