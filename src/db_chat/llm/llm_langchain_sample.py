@@ -3,7 +3,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers.openai_functions import JsonKeyOutputFunctionsParser
 
 prompt = ChatPromptTemplate.from_template("tell me a joke about {foo}")
-model = ChatOpenAI(openai_api_key="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")
+model = ChatOpenAI(openai_api_key="sk-xxxxxx")
 # chain = prompt | model
 
 functions = [

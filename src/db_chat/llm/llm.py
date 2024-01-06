@@ -7,9 +7,9 @@ import openai
 from db_chat.sql_builder.schema import Schema
 
 prompt = ChatPromptTemplate.from_template("find top 10 customers by revenue")
-model = ChatOpenAI(openai_api_key="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")
+model = ChatOpenAI(openai_api_key="sk-xxxxx")
 
-openai.api_key = "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"
+openai.api_key = "sk-xxxxx"
 # chain = prompt | model
 
 
