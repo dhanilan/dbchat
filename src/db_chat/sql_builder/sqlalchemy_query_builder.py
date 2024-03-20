@@ -96,8 +96,8 @@ class SQLAlchemyQueryBuilder:
         self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause, select_columns
     ):
         group_by_columns = []
-        if not query.group_by:
-            return from_clause, group_by_columns
+        if query.group_by is None:
+            group_by_columns = []
         for group_by_field in query.group_by:
             group_by_column = self._get_field_from_table(query.table, group_by_field)
 

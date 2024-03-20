@@ -1,4 +1,5 @@
 """ Query Class """
+
 from __future__ import annotations
 import dataclasses
 
@@ -79,11 +80,15 @@ class Query:
     limit: int = None
     offset: int = None
 
-    def __init__(self, **kwargs):
-        self.table = kwargs.get("table")
-        self.fields = kwargs.get("fields")
-        self.filters = [Filter(**filter_obj) for filter_obj in kwargs.get("filters")]
-        self.group_by = kwargs.get("group_by")
-        self.sort = SortOrder(**kwargs.get("sort"))
-        self.limit = kwargs.get("limit")
-        self.offset = kwargs.get("offset")
+    # def __init__(self, **kwargs):
+    #     self.table = kwargs.get("table")
+    #     self.fields = kwargs.get("fields")
+    #     self.filters = [
+    #         filter_obj if isinstance(filter_obj, Filter) else Filter(**filter_obj)
+    #         for filter_obj in kwargs.get("filters", [])
+    #     ]
+    #     self.group_by = kwargs.get("group_by")
+    #     if kwargs.get("sort"):
+    #         self.sort = SortOrder(**kwargs.get("sort"))
+    #     self.limit = kwargs.get("limit")
+    #     self.offset = kwargs.get("offset")
