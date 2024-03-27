@@ -67,6 +67,26 @@ class Expression:
 
 
 @dataclasses.dataclass
+class Join:
+    """
+    Class to encapsulate a join
+    """
+
+    query: Query
+    table: str
+    alias: str = None
+
+    # TODO: this should be a list of conditions rather than a single equality condition. But for later
+    field: str = None
+    related_field: str = None
+    join_type: str = "JOIN"
+
+    def __post_init__(self):
+        if self.join_type not in ["JOIN", "LEFT JOIN", "RIGHT JOIN"]:
+            raise ValueError("Invalid join type")
+
+
+@dataclasses.dataclass
 class Query:
     """
     Class to encapsulate the SQL query
@@ -79,6 +99,7 @@ class Query:
     sort: SortOrder = None
     limit: int = None
     offset: int = None
+    joins: dict[str, Join] = dataclasses.field(default_factory=lambda: {})
 
     # def __init__(self, **kwargs):
     #     self.table = kwargs.get("table")

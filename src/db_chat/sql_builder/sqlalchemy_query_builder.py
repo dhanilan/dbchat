@@ -16,6 +16,12 @@ class SQLAlchemyQueryBuilder:
     Query Builder that builds SQL Alchmey Query
     """
 
+    query: Query
+    sa_table: TableClause
+    joined_paths: list[str] = []
+    joined_tables: dict[str] = {}
+    select_columns: list = []
+
     def __init__(self, schema: Schema):
         self.schema = schema
 
@@ -24,7 +30,13 @@ class SQLAlchemyQueryBuilder:
         Build out the sql
         """
 
-        statement = self._build_from_clause(query)
+        self.query = query
+        self.sa_table = self._get_table_from_mapping(query.table)
+        self.joined_paths = []
+        self.joined_tables = {}
+        self.select_columns = []
+
+        statement = self._build_from_clause()
 
         # select_clause = self._build_select_clause(query)
 
@@ -50,29 +62,26 @@ class SQLAlchemyQueryBuilder:
         print(sql)
         return sql
 
-    def _build_from_clause(self, query: Query):
+    def _build_from_clause(self):
         """
         Build the FROM clause
         """
 
-        sa_table = self._get_table_from_mapping(query.table)
-        select_columns = []
-        joined_paths = []
-        joined_tables: dict = {}
+        # self._build_joins()
 
-        from_clause = self._build_select_clause_for_fields(query, sa_table, select_columns, joined_paths, joined_tables)
+        from_clause = self._build_select_clause_for_fields()
 
         from_clause, filter_clauses, sa_having_clauses = self._build_filter_clause(
-            query, sa_table, joined_paths, joined_tables, from_clause
+            self.query, self.sa_table, self.joined_paths, self.joined_tables, from_clause
         )
 
         from_clause, group_by_clauses = self._build_group_by_columns(
-            query, sa_table, joined_paths, joined_tables, from_clause, select_columns
+            self.query, self.sa_table, self.joined_paths, self.joined_tables, from_clause, self.select_columns
         )
 
-        self._append_non_having_clauses_to_group_by(select_columns, sa_having_clauses, group_by_clauses)
+        self._append_non_having_clauses_to_group_by(self.select_columns, sa_having_clauses, group_by_clauses)
 
-        statement = select(*select_columns).select_from(from_clause)
+        statement = select(*self.select_columns).select_from(from_clause)
 
         if len(filter_clauses) > 0:
             statement = statement.where(and_(*filter_clauses))
@@ -84,6 +93,18 @@ class SQLAlchemyQueryBuilder:
             statement = statement.having(and_(*sa_having_clauses))
 
         return statement
+
+    def _build_joins(self):
+        for join_key in self.query.joins:
+            join = self.query.joins[join_key]
+            join_table = self._get_table_from_mapping(join.table)
+            join_to_aliased_table = alias(join_table, join.alias)
+            join_condition = self.sa_table.columns.get(join.field) == join_to_aliased_table.columns.get(
+                join.related_field
+            )
+            self.sa_table = self.sa_table.join(join_to_aliased_table, join_condition)
+            self.joined_paths.append(join.alias)
+            self.joined_tables[join.alias] = join_to_aliased_table
 
     def _append_non_having_clauses_to_group_by(self, select_columns, sa_having_clauses, group_by_clauses):
         select_columns_without_aggregates = [
@@ -183,34 +204,38 @@ class SQLAlchemyQueryBuilder:
 
         return filter_clause
 
-    def _build_select_clause_for_fields(
-        self, query: Query, sa_table: TableClause, select_columns: list, joined_paths, joined_tables
-    ):
-        from_clause = sa_table
+    def _build_select_clause_for_fields(self):
+        from_clause = self.sa_table
         query_field: str | Expression
-        for query_field in query.fields:
+        for query_field in self.query.fields:
             field_name: str = query_field
             if isinstance(query_field, Expression):
                 sa_expression_function = self._build_clause_for_expression(
-                    query, from_clause, query_field, sa_table, joined_paths, joined_tables
+                    self.query, from_clause, query_field, self.sa_table, self.joined_paths, self.joined_tables
                 )
-                select_columns.append(sa_expression_function)
+                self.select_columns.append(sa_expression_function)
                 continue
 
-            field_column = self._get_field_from_table(query.table, field_name)
+            field_column = self._get_field_from_table(self.query.table, field_name)
 
-            current_table_name = query.table
-            current_alias = query.table
+            current_table_name = self.query.table
+            current_alias = self.query.table
 
             if not field_column.relationships:
-                select_columns.append(sa_table.columns.get(field_column.name))
+                self.select_columns.append(self.sa_table.columns.get(field_column.name))
 
             if field_column.relationships:
                 from_clause, join_to_aliased_table = self._build_join_for_relationship(
-                    sa_table, from_clause, joined_paths, joined_tables, field_column, current_table_name, current_alias
+                    self.sa_table,
+                    from_clause,
+                    self.joined_paths,
+                    self.joined_tables,
+                    field_column,
+                    current_table_name,
+                    current_alias,
                 )
 
-                select_columns.append(
+                self.select_columns.append(
                     join_to_aliased_table.columns.get(field_column.related_field).label(field_column.name)
                 )
 
