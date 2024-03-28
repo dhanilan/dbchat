@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from db_chat.sql_builder.schema import Column, Schema, Table
-from sqlalchemy import Label, alias, and_, select, table, column, TableClause, func
+from sqlalchemy import Label, alias, and_, select, table, column, TableClause, func, ColumnClause
 from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.FilterOperator import FilterOperator
 
@@ -67,7 +67,7 @@ class SQLAlchemyQueryBuilder:
         Build the FROM clause
         """
 
-        # self._build_joins()
+        self._build_joins()
 
         from_clause = self._build_select_clause_for_fields()
 
@@ -98,13 +98,13 @@ class SQLAlchemyQueryBuilder:
         for join_key in self.query.joins:
             join = self.query.joins[join_key]
             join_table = self._get_table_from_mapping(join.table)
-            join_to_aliased_table = alias(join_table, join.alias)
+            join_to_aliased_table = alias(join_table, join_key)
             join_condition = self.sa_table.columns.get(join.field) == join_to_aliased_table.columns.get(
                 join.related_field
             )
             self.sa_table = self.sa_table.join(join_to_aliased_table, join_condition)
-            self.joined_paths.append(join.alias)
-            self.joined_tables[join.alias] = join_to_aliased_table
+            self.joined_paths.append(join_key)
+            self.joined_tables[join_key] = join_to_aliased_table
 
     def _append_non_having_clauses_to_group_by(self, select_columns, sa_having_clauses, group_by_clauses):
         select_columns_without_aggregates = [
@@ -221,8 +221,16 @@ class SQLAlchemyQueryBuilder:
             current_table_name = self.query.table
             current_alias = self.query.table
 
+            if isinstance(field_column, ColumnClause):
+                self.select_columns.append(field_column)
+                continue
+
             if not field_column.relationships:
-                self.select_columns.append(self.sa_table.columns.get(field_column.name))
+                sa_colum_to_select = self._get_sa_column_from_sa_table_clause(
+                    self.sa_table, field_column.name, self.query.table
+                )
+                self.select_columns.append(sa_colum_to_select)
+                continue
 
             if field_column.relationships:
                 from_clause, join_to_aliased_table = self._build_join_for_relationship(
@@ -238,8 +246,15 @@ class SQLAlchemyQueryBuilder:
                 self.select_columns.append(
                     join_to_aliased_table.columns.get(field_column.related_field).label(field_column.name)
                 )
+                continue
 
         return from_clause
+
+    def _get_sa_column_from_sa_table_clause(self, sa_table: TableClause, column_name: str, sa_table_name: str):
+        for column in sa_table.columns:
+            if column.name == column_name and column.table.name == sa_table_name:
+                return column
+        return None
 
     def _build_clause_for_expression(
         self,
@@ -356,7 +371,10 @@ class SQLAlchemyQueryBuilder:
     def _get_relationship_by_name(self, relationship_name):
         return next((rel for rel in self.schema.relationships if rel.name == relationship_name), None)
 
-    def _get_field_from_table(self, table_name, field_name):
+    def _get_field_from_table(self, table_name, field_name: str):
+        if "." in field_name:
+            table_name, field_name = field_name.split(".")
+            return self.joined_tables[table_name].columns.get(field_name)
         return next(
             (c for c in self.schema.tables[table_name].columns if c.name == field_name),
             None,

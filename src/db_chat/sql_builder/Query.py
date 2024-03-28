@@ -72,9 +72,8 @@ class Join:
     Class to encapsulate a join
     """
 
-    query: Query
+    # query: Query
     table: str
-    alias: str = None
 
     # TODO: this should be a list of conditions rather than a single equality condition. But for later
     field: str = None
