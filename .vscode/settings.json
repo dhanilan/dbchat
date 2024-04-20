@@ -32,8 +32,8 @@
             "server": "localhost",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "Test",
-            "database": "postgres",
+            "name": "chinook",
+            "database": "chinook",
             "username": "postgres",
             "password": "postgres"
         }
