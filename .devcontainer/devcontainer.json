@@ -2,10 +2,6 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.222.0/containers/python-3-miniconda
 {
 	"name": "Python Environment",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"context": ".."
-	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -21,7 +17,9 @@
 				"ms-vsliveshare.vsliveshare",
 				"ryanluker.vscode-coverage-gutters",
 				"bungcip.better-toml",
-				"GitHub.copilot"
+				"GitHub.copilot",
+				"mtxr.sqltools-driver-pg",
+				"mtxr.sqltools"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -40,5 +38,7 @@
 			}
 		}
 	},
-	"onCreateCommand": "pre-commit install-hooks"
+	// "onCreateCommand": "pre-commit install-hooks",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app"
 }
