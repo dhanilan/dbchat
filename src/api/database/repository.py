@@ -78,5 +78,3 @@ class MongoRepository(IRepository):
     def delete(self, entity: DbModel) -> None:
         pass
 
-    def _from_dict(self, data: dict) -> DbModel:
-        DbModel(data)
