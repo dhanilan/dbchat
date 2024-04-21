@@ -2,13 +2,14 @@ from fastapi import Depends, FastAPI
 
 from api.dependencies import get_query_token, get_token_header
 from api.internal import admin
-from api.routers import items, users
+from api.routers import items, users,settings
 
 app = FastAPI() # dependencies=[Depends(get_query_token)])
 
 
 app.include_router(users.router)
 app.include_router(items.router)
+app.include_router(settings.router)
 app.include_router(
     admin.router,
     prefix="/admin",

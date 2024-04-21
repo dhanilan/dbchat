@@ -2,6 +2,18 @@
     "version": "0.1.0",
     "configurations": [
         {
+            "name": "Python Debugger: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${workspaceFolder}/src/api",
+            "args": [
+                "main:app",
+                "--reload"
+            ],
+            "jinja": true
+        },
+        {
             "name": "Python: Debug Tests",
             "type": "python",
             "request": "launch",
