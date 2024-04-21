@@ -2,6 +2,7 @@
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Container, Row, Col, Form } from 'react-bootstrap';
+import 'boxicons/css/boxicons.min.css';
 
 
 function App() {
@@ -13,38 +14,30 @@ function App() {
         <Row className='h-100'>
           <Col xl={2} xs={2} className='h-100' style={{ backgroundColor: '#f9f9f9' }}>
           </Col>
-          <Col xl={10} xs={10} className='h-100'>
-            <Container fluid>
+          <Col xl={10} xs={10} className='h-100' >
+            <Container className='h-100' fluid style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Container>
-                All Messages Appear here
+
               </Container>
-              <Container>
+              <Container className='p-4'>
                 <Row>
-                  Sugesstions...
+                  All Messages Appear here
                 </Row>
                 <Row>
-                  <Col>
+                  Suggestions...
+                </Row>
+                <Row >
+                  <Col xl={10}>
                     <Form.Control type="text" placeholder="Type Something to get started" />
+                  </Col>
+                  <Col xl={2}>
+                    <Button type='submit' variant="primary"><i className='bx bx-send'></i> Send</Button>
                   </Col>
                 </Row>
               </Container>
             </Container>
           </Col>
         </Row>
-        {/* <Row>
-          <Col> <Button variant="primary">Primary</Button>{' '}
-            <Button variant="secondary">Secondary</Button>{' '}
-            <Button variant="success">Success</Button>{' '}
-            <Button variant="warning">Warning</Button>{' '}
-            <Button variant="danger">Danger</Button>{' '}
-            <Button variant="info">Info</Button>{' '}
-            <Button variant="light">Light</Button>{' '}
-            <Button variant="dark">Dark</Button> <Button variant="link">Link</Button></Col>
-          <Col>2 of 2</Col>
-        </Row> */}
-
-
-
       </Container>
 
     </>
