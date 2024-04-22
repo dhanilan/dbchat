@@ -15,6 +15,18 @@ export class BaseApi {
         const data = await response.json();
         return data;
     }
+    public async GetOne<T>(url: string, params: URLSearchParams = new URLSearchParams({})): Promise<T> {
+        const response = await fetch(`${this.base_url}${url}?` + params, {
+            headers: {
+                'Authorization': get_bearer_token()
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch');
+        }
+        const data = await response.json();
+        return data;
+    }
     public async GetById<T>(url: string, id: string): Promise<T> {
         const response = await fetch(`${this.base_url}${url}/${id}`, {
             headers: {

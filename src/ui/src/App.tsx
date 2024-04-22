@@ -3,9 +3,17 @@ import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Container, Row, Col, Form } from 'react-bootstrap';
 import 'boxicons/css/boxicons.min.css';
-
+import { appSettingStore, AppSetting } from './store/appSettingStore';
+import { useEffect } from 'react';
 
 function App() {
+  const store = appSettingStore();
+
+  useEffect(() => {
+    store.getAppSetting();
+  }
+    , []);
+  const appSetting = store.appSetting;
 
 
   return (
@@ -22,6 +30,12 @@ function App() {
               <Container className='p-4'>
                 <Row>
                   All Messages Appear here
+                  Seetings:
+                  <ul>
+                    <li>oai_api_key: {appSetting.oai_api_key}</li>
+                    <li>analytics_db_url: {appSetting.analytics_db_url}</li>
+                    <li>customer_id: {appSetting.customer_id}</li>
+                  </ul>
                 </Row>
                 <Row>
                   Suggestions...
