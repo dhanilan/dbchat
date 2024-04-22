@@ -40,7 +40,7 @@ async def delete_conversation(id: str):
 async def read_conversation_messages(conversation_id: str):
 
     repository = getRepository(CONST_TABLE_NAME_CONVERSATION_MESSAGE,settings)
-    conversation_messages  = repository.get_one_by_model({"conversation_id":conversation_id})
+    conversation_messages  = repository.get_by_model({"conversation_id":conversation_id})
     return conversation_messages
 
 @router.post("/conversation/{conversation_id}/messages", tags=["conversation"])
