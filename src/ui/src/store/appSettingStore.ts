@@ -27,13 +27,13 @@ export const appSettingStore = create<AppSettingStoreType>((set, get, _) => ({
     getAppSetting: async () => {
         set({ loading: true });
         const api = new BaseApi();
-        const appSetting = await api.GetOne<AppSetting>('/settings');
+        const appSetting = await api.GetOne<AppSetting>('settings');
         set({ appSetting, loading: false });
     },
     updateAppSetting: async (appSetting: AppSetting) => {
         set({ loading: true });
         const api = new BaseApi();
-        const updatedAppSetting = await api.create<AppSetting>('/settings', appSetting);
+        const updatedAppSetting = await api.create<AppSetting>('settings', appSetting);
         set({ appSetting: updatedAppSetting, loading: false });
     }
 }));

@@ -40,7 +40,7 @@ export class BaseApi {
         return data;
     }
     public async create<T>(url: string, data: T | any): Promise<T> {
-        const response = await fetch(`${this.base_url}${url}`, {
+        const response = await fetch(`${this.base_url}/${url}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

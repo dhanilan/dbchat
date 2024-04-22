@@ -8,16 +8,18 @@ interface MenuProps {
 
 const Menu: React.FC<MenuProps> = ({ items }) => {
     return (
-        <ul className='list-unstyled pt-4'>
-            {items.map((item, index) => (
-                <li key={index} >
-                    <a href={item.url} className='pd-4'>
-                        <i className={item.icon}></i>
-                        {item.label}
-                    </a>
-                </li>
-            ))}
-        </ul>
+        <nav>
+            <ul className='list-unstyled pt-4'>
+                {items.map((item, index) => (
+                    <li key={index} className='nav-menu-item pb-2' >
+                        <a href={item.url} className='nav-menu-item-link pd-4'>
+                            <i className={item.icon}></i>
+                            {item.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
     );
 };
 

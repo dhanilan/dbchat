@@ -95,3 +95,27 @@ body {
 .border-top {
   border-top: 1px solid #dee2e6 !important;
 }
+
+.nav-menu-item {
+
+
+  color: #0d0d0d;
+}
+
+.nav-menu-item-link {
+  color: #0d0d0d;
+  /* font-weight: bold; */
+}
+
+.nav-menu-item-link:hover {
+  color: #0d0d0d;
+  font-weight: bold;
+}
+
+.font-weight-bold {
+  font-weight: bold !important;
+}
+
+.pl-4 {
+  padding-left: 1.5rem !important;
+}
