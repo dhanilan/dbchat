@@ -39,6 +39,10 @@ class IRepository(ABC):
         pass
 
     @abstractmethod
+    def get_by_model(self, model: dict) -> List[DbModel]:
+        pass
+
+    @abstractmethod
     def get_by_id(self, id: str) -> DbModel:
         pass
 
@@ -75,6 +79,14 @@ class MongoRepository(IRepository):
             for result in db_results:
                 results.append(self._create_model_object(result))
 
+        return results
+
+    def get_by_model(self, filter: dict) -> DbModel:
+        db_results = self.collection.find(filter)
+        results = []
+        if db_results:
+            for result in db_results:
+                results.append(self._create_model_object(result))
         return results
 
     def get_one_by_model(self, filter: dict) -> DbModel:

@@ -3,8 +3,8 @@ export class BaseApi {
     constructor() {
         this.base_url = import.meta.env.VITE_API_URL;
     }
-    public async Get<T>(url: string, params: URLSearchParams = new URLSearchParams({})): Promise<T[] | T> {
-        const response = await fetch(`${this.base_url}${url}?` + params, {
+    public async Get<T>(url: string, params: URLSearchParams = new URLSearchParams({})): Promise<T[]> {
+        const response = await fetch(`${this.base_url}/${url}?` + params, {
             headers: {
                 'Authorization': get_bearer_token()
             }
@@ -16,7 +16,7 @@ export class BaseApi {
         return data;
     }
     public async GetOne<T>(url: string, params: URLSearchParams = new URLSearchParams({})): Promise<T> {
-        const response = await fetch(`${this.base_url}${url}?` + params, {
+        const response = await fetch(`${this.base_url}/${url}?` + params, {
             headers: {
                 'Authorization': get_bearer_token()
             }
@@ -28,7 +28,7 @@ export class BaseApi {
         return data;
     }
     public async GetById<T>(url: string, id: string): Promise<T> {
-        const response = await fetch(`${this.base_url}${url}/${id}`, {
+        const response = await fetch(`${this.base_url}/${url}/${id}`, {
             headers: {
                 'Authorization': get_bearer_token()
             }
@@ -59,7 +59,7 @@ export class BaseApi {
         return responseData;
     }
     public async update<T>(url: string, data: T | any): Promise<T> {
-        const response = await fetch(`${this.base_url}${url}/${data.id}`, {
+        const response = await fetch(`${this.base_url}/${url}/${data.id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export class BaseApi {
         return responseData;
     }
     public async delete<T>(url: string, id: string): Promise<T> {
-        const response = await fetch(`${this.base_url}${url}/${id}`, {
+        const response = await fetch(`${this.base_url}/${url}/${id}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': get_bearer_token()

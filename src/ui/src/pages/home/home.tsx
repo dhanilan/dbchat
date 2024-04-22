@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { conversationStore } from '../../store/chatConversationStore';
 
@@ -10,7 +10,8 @@ const Home: React.FC = () => {
     const messages = store.messages;
     const wait_for_server = store.wait_for_server;
     useEffect(() => {
-        store.initialize();
+        console.log('Fetching all conversations');
+        store.fetchAllConversations();
     }, []);
 
     const onMessageChange = (event: any) => {
@@ -21,7 +22,7 @@ const Home: React.FC = () => {
         console.log('Button Clicked');
         setMessage('');
         store.addMessage({
-            conversationId: conversationId,
+            conversation_id: conversationId,
             text: message,
             sender: 'User',
             isUser: true,
