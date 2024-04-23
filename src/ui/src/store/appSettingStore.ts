@@ -6,7 +6,7 @@ import { BaseApi } from "../api/baseApi";
 export interface AppSetting {
     oai_api_key: string;
     analytics_db_url: string;
-    customer_id: string;
+    customer_id?: string;
 
 }
 

@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
 from pydantic import BaseModel
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 from api.models.model_map import collection_to_model_map
 from api.settings import Settings
+
 class DbModel(ABC,BaseModel):
 
     id: Optional[str] = None
@@ -107,7 +109,7 @@ class MongoRepository(IRepository):
 
 
     def get_by_id(self, id: str) -> DbModel:
-        result = self.collection.find_one({"id":id})
+        result = self.collection.find_one({"_id": ObjectId(id)})
 
         return self._create_model_object(result)
 
@@ -118,8 +120,8 @@ class MongoRepository(IRepository):
         return result.inserted_id
 
 
-    def update(self, entity: DbModel) -> DbModel:
-        result = self.collection.update_one({"id":entity.id}, {"$set": entity.model_dump()})
+    def update(self,  entity: DbModel) -> DbModel:
+        result = self.collection.update_one({"_id": ObjectId(entity.id)}, {"$set": entity.model_dump()})
         return result
 
     def delete(self, id: str) -> None:

@@ -1,9 +1,11 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from api.settings import settings
-from api.models.model_map import CONST_TABLE_NAME_CONVERSATION,CONST_TABLE_NAME_CONVERSATION_MESSAGE
+from api.models.model_map import CONST_TABLE_NAME_APP_SETTINGS, CONST_TABLE_NAME_CONVERSATION,CONST_TABLE_NAME_CONVERSATION_MESSAGE
 from api.models.AppSettings import Conversation,ConversationMessage
 from api.dependencies import getRepository
+from api.agents.chat_manager import ChatManager
+
 router = APIRouter()
 
 @router.get("/conversation/", tags=["conversation"])
@@ -49,8 +51,17 @@ async def create_conversation_message(conversation_message: ConversationMessage,
     repository = getRepository(CONST_TABLE_NAME_CONVERSATION_MESSAGE,settings)
     repository.create(conversation_message)
 
+    conversationRepository = getRepository(CONST_TABLE_NAME_CONVERSATION,settings)
+    conversation : Conversation = conversationRepository.get_by_id(conversation_id)
+
+    appSettingsRepository = getRepository(CONST_TABLE_NAME_APP_SETTINGS,settings)
+    app_settings  = appSettingsRepository.get_one_by_model({"customer_id":conversation.customer_id})
+
+    chat_manager = ChatManager(app_settings)
+    response_message = chat_manager.get_response(conversation_id,conversation_message)
+
     response = ConversationMessage(
-                                   text= f' response from bot for :{conversation_message.text}',
+                                   text= f' response from bot for :{response_message}',
                                    sender="bot",
                                    timestamp=datetime.now(),
                                    conversation_id=conversation_id
