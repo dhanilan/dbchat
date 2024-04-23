@@ -112,6 +112,13 @@ body {
   font-weight: bold;
 }
 
+.nav-menu-item.active {
+  background-color: #ececec;
+  font-weight: bold;
+  border-radius: 5px;
+}
+
+
 .font-weight-bold {
   font-weight: bold !important;
 }

@@ -8,7 +8,7 @@ type UIStore = {
 };
 
 const defaultMenuItems = [
-    { label: 'Home', url: '/', icon: 'bx bx-home' },
+
     { label: 'Settings', url: '/settings', icon: 'bx bx-cog' },
 ];
 
