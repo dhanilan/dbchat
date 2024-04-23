@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 import { conversationStore } from '../../store/chatConversationStore';
 
@@ -8,9 +8,8 @@ const Home: React.FC = () => {
     const [message, setMessage] = useState('');
     const conversationId = store.currentConverstationId;
     const messages = store.messages;
-    const wait_for_server = store.wait_for_server;
+
     useEffect(() => {
-        console.log('Fetching all conversations');
         store.fetchAllConversations();
     }, []);
 

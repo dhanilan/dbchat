@@ -24,6 +24,8 @@ type ChatConversationStore = {
     initialize: (conversationId?: string) => Promise<void>;
     addMessage: (message: ConversationMessage) => Promise<void>;
     fetchAllConversations: () => Promise<void>;
+    createConversation: (title?: string) => Promise<void>;
+    deleteConversation: (conversationId: string) => Promise<void>;
 
 };
 
@@ -43,9 +45,9 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
             const api = new BaseApi();
             try {
                 const messages = await api.Get<ConversationMessage>(`conversation/${conversationId}/messages`);
-                if (messages && messages.length > 0) {
-                    set({ messages: messages, wait_for_server: false });
-                }
+
+                set({ messages: messages, wait_for_server: false });
+
 
             } catch (error) {
                 console.log('Failed to fetch messages');
@@ -60,7 +62,7 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
 
             const api = new BaseApi();
             try {
-                const created_id: string = await api.create('conversation', { title: '' });
+                const created_id: string = await api.create('conversation', { title: 'New Conversation' });
 
                 set({ wait_for_server: false, currentConverstationId: created_id });
             } catch (error) {
@@ -116,5 +118,31 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
 
 
     },
+    createConversation: async (title: string = 'New Conversation') => {
+        // Create a new conversation
+        set({ wait_for_server: true });
+        const api = new BaseApi();
+        try {
+            const created_id: string = await api.create('conversation', { title: title });
+            set({ wait_for_server: false, currentConverstationId: created_id });
+            get().initialize(created_id);
+        } catch (error) {
+            console.log('Failed to create conversation');
+            set({ wait_for_server: false });
+        }
+    },
+    deleteConversation: async (conversationId: string) => {
+        // Delete the conversation from the server
+        set({ wait_for_server: true });
+        const api = new BaseApi();
+        try {
+            await api.delete(`conversation`, conversationId);
+            set({ wait_for_server: false });
+            get().fetchAllConversations();
+        } catch (error) {
+            console.log('Failed to delete conversation');
+            set({ wait_for_server: false });
+        }
+    }
 
 }));

@@ -61,7 +61,7 @@ async def create_conversation_message(conversation_message: ConversationMessage,
     response_message = chat_manager.get_response(conversation_id,conversation_message)
 
     response = ConversationMessage(
-                                   text= f' response from bot for :{response_message}',
+                                   text= f'{response_message}',
                                    sender="bot",
                                    timestamp=datetime.now(),
                                    conversation_id=conversation_id
