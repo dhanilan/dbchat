@@ -55,21 +55,6 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
             }
 
             set({ wait_for_server: false });
-        } else {
-            // create a new conversation
-            set({ currentConverstationId: '', title: 'New Conversation' });
-            set({ wait_for_server: true });
-
-            const api = new BaseApi();
-            try {
-                const created_id: string = await api.create('conversation', { title: 'New Conversation' });
-
-                set({ wait_for_server: false, currentConverstationId: created_id });
-            } catch (error) {
-                set({ wait_for_server: false });
-            }
-
-
         }
     },
     fetchAllConversations: async () => {
@@ -82,7 +67,23 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
                 get().initialize(conversations[0].id);
             }
             else {
-                get().initialize();
+
+                // create a new conversation
+                set({ currentConverstationId: '', title: 'New Conversation' });
+                set({ wait_for_server: true });
+
+                const api = new BaseApi();
+                try {
+                    const created_id: string = await api.create('conversation', { title: 'New Conversation' });
+
+                    set({ wait_for_server: false, currentConverstationId: created_id });
+                    get().initialize(created_id);
+                } catch (error) {
+                    set({ wait_for_server: false });
+                    console.log('Failed to create conversation');
+
+                }
+
             }
             console.log(conversations);
         } catch (error) {

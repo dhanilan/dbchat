@@ -23,7 +23,7 @@ const Menu: React.FC<MenuProps> = ({ items }) => {
         <nav>
 
             <h3 className='m-2'>
-                <a href='/' className='nav-menu-item pt-4'>
+                <a href='/' className='nav-menu-item pt-4 text-decoration-none'>
                     <i className='fa fa-home'></i>
                     DB Chat
                 </a>
@@ -31,21 +31,25 @@ const Menu: React.FC<MenuProps> = ({ items }) => {
 
             <ul className='list-unstyled pt-4'>
                 <li className={`nav-menu-item pb-2 `} >
-                    <a href='#' className='nav-menu-item-link pd-4' onClick={() => store.createConversation()}>
+                    <a href='#' className='nav-menu-item-link pd-4 text-decoration-none' onClick={() => store.createConversation()}>
                         <i className='fa fa-plus p-2'></i>
-                        New
+                        Create New
                     </a>
                 </li>
                 {allConversations.map((item, index) => (
                     <li key={index} className={`nav-menu-item p-2 ${store.currentConverstationId == item.id ? 'active' : ''}`} >
-                        <a href='#' className='nav-menu-item-link pd-4' onClick={() => handleItemClick(item.id)}>
+                        <div className='d-flex d-flex justify-content-between'>
+                            <a href='#' className='nav-menu-item-link pd-4 text-decoration-none' onClick={() => handleItemClick(item.id)}>
 
-                            {item.title}
-                        </a>
+                                {item.title}
+                            </a>
+                            <a style={{ cursor: 'pointer' }} onClick={() => store.deleteConversation(item.id)}>
+                                <i className='fa fa-trash'></i>
+                            </a>
+                        </div>
 
-                        <a style={{ cursor: 'pointer' }} onClick={() => store.deleteConversation(item.id)}>
-                            <i className='fa fa-trash'></i>
-                        </a>
+
+
                     </li>
                 ))}
             </ul>

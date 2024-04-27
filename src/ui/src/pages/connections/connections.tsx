@@ -99,7 +99,7 @@ const Connections: React.FC<SettingsProps> = () => {
                     </InputGroup>
 
                     <Button variant="primary" type="submit" onClick={handleSubmit}>
-                        Submit
+                        Save
                     </Button>
                 </Form>
             </Container>

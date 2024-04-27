@@ -54,18 +54,9 @@ const Settings: React.FC<SettingsProps> = () => {
                         <Form.Control type="text" placeholder="Enter oai_api_key" value={
                             oai_api_key} onChange={onApiKeyChange} />
                     </Form.Group>
-                    <Form.Group controlId="formBasicEmail">
-                        <Form.Label>Database URL</Form.Label>
-                        <Form.Control type="text" placeholder="Enter analytics_db_url" value={
-                            analytics_db_url} onChange={onDbUrlChange} />
-                    </Form.Group>
-                    {/* <Form.Group controlId="formBasicEmail">
-                        <Form.Label>customer_id</Form.Label>
-                        <Form.Control type="text" placeholder="Enter customer_id" value={
-                            appSetting.customer_id} />
-                    </Form.Group> */}
+
                     <Button variant="primary" type="submit" className='mt-4' onClick={onsubmitClick}>
-                        Submit
+                        Save
                     </Button>
                 </Form>
                 {/* Seetings:

@@ -18,5 +18,6 @@ class ConversationMessage(BaseModel,BaseDbModel):
     conversation_id: str
 
 class Conversation(BaseModel,BaseDbModel):
+    connection_id: str = ""
     customer_id: str = "default"
     title : str = ""
