@@ -16,6 +16,10 @@ const Home: React.FC = () => {
         setMessage(event.target.value);
     }
 
+    useEffect(() => {
+        setCurrentConnection(connectionStore.connection)
+    }, [connectionStore.connection])
+
     const onMessageSubmit = (event: any) => {
         console.log('Button Clicked');
         setMessage('');
