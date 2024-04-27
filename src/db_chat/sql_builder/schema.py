@@ -40,7 +40,7 @@ class Column:
     friendly_name: str
     name: str
     relationships: list[str] = dataclasses.field(default_factory=lambda: [])
-    related_field: str = None
+    related_field: str|None = None
 
 
 @dataclasses.dataclass

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Container, Form, Button, Dropdown, DropdownButton } from 'react-bootstrap';
+import { Container, Form, Button, Dropdown, DropdownButton, InputGroup } from 'react-bootstrap';
 import { connectionsStore } from '../../store/connectionsStore';
 
 interface SettingsProps {
@@ -20,9 +20,6 @@ const Connections: React.FC<SettingsProps> = () => {
     const [connectionString, setConnectionString] = useState(store.connection.connection_string);
 
 
-    useEffect(() => {
-        store.initialize();
-    }, []);
 
     useEffect(() => {
         setName(store.connection.name);
@@ -66,7 +63,7 @@ const Connections: React.FC<SettingsProps> = () => {
                     key={currentConnection.name}
                     id={`dropdown-variants-${currentConnection.id}`}
                     variant={currentConnection.name}
-                    title={currentConnection.name || 'Select Connection'}
+                    title={<><i className='bold'>Connection: </i>  <span>{currentConnection.name || 'Select Connection'}</span></>}
                 >
                     {store.connections.map((connection, index) => (
                         <Dropdown.Item key={index} active={connection.id == currentConnection.id} eventKey={connection.id} onClick={() => setCurrentConnection(connection)}>{connection.name}
@@ -79,16 +76,28 @@ const Connections: React.FC<SettingsProps> = () => {
                 </DropdownButton>
 
                 <Form>
+
                     <Form.Group controlId="formConnectionName">
                         <Form.Label>Connection Name</Form.Label>
                         <Form.Control type="text" placeholder="Enter connection name" value={name} onChange={(e) => setName(e.currentTarget.value)} />
                     </Form.Group>
+                    <InputGroup>
 
-                    <Form.Group controlId="formConnectionString">
-                        <Form.Label>Database URL</Form.Label>
+
+                    </InputGroup>
+
+                    {/* <Form.Group controlId="formConnectionString">
+
+
+                    </Form.Group> */}
+
+                    <InputGroup>
+                        {/* <Form.Label>Database URL</Form.Label> */}
                         <Form.Control type="text" placeholder="Enter analytics_db_url" value={connectionString} onChange={(e) => setConnectionString(e.currentTarget.value)} />
                         <Button variant="primary" onClick={createSchema}> Auto-Generate Schema </Button>
-                    </Form.Group>
+                        {/* <Button variant="outline-secondary">Button</Button> */}
+                    </InputGroup>
+
                     <Button variant="primary" type="submit" onClick={handleSubmit}>
                         Submit
                     </Button>
