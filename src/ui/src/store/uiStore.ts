@@ -8,7 +8,7 @@ type UIStore = {
 };
 
 const defaultMenuItems = [
-
+    { label: 'Connections', url: '/connections', icon: 'bx bx-plug' },
     { label: 'Settings', url: '/settings', icon: 'bx bx-cog' },
 ];
 

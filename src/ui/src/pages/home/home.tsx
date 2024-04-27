@@ -9,9 +9,6 @@ const Home: React.FC = () => {
     const conversationId = store.currentConverstationId;
     const messages = store.messages;
 
-    useEffect(() => {
-        store.fetchAllConversations();
-    }, []);
 
     const onMessageChange = (event: any) => {
         setMessage(event.target.value);

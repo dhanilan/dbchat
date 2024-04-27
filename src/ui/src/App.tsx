@@ -4,21 +4,32 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col } from 'react-bootstrap';
 import 'boxicons/css/boxicons.min.css';
 import { uiStore } from './store/uiStore';
+import { conversationStore } from './store/chatConversationStore';
 import Menu from './components/menu/menu';
 import Home from './pages/home/home';
 import Settings from './pages/settings/settings';
+import Connections from './pages/connections/connections';
 
 import {
   BrowserRouter,
   Route,
   Routes,
 } from "react-router-dom";
+import { useEffect } from 'react';
 
 function App() {
 
   const ui = uiStore();
+  const conversation = conversationStore();
+
+  useEffect(() => {
+    conversation.initialize();
+  }, [])
 
 
+  useEffect(() => {
+    conversation.fetchAllConversations();
+  }, []);
 
 
   return (
@@ -38,6 +49,9 @@ function App() {
                 </Route>
                 <Route path='/settings' element={<Settings></Settings>}>
 
+
+                </Route>
+                <Route path='/connections' element={<Connections></Connections>}>
                 </Route>
               </Routes>
             </BrowserRouter>

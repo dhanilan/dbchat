@@ -57,7 +57,7 @@ class IRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, entity: DbModel) -> None:
+    def delete_by_id(self, id: str) -> None:
         pass
 
     @abstractmethod
@@ -124,8 +124,8 @@ class MongoRepository(IRepository):
         result = self.collection.update_one({"_id": ObjectId(entity.id)}, {"$set": entity.model_dump()})
         return result
 
-    def delete(self, id: str) -> None:
-        result = self.collection.delete_one({"id":str})
+    def delete_by_id(self, id: str) -> None:
+        result = self.collection.delete_one({"_id": ObjectId(id)})
         return result.deleted_count
 
     def delete_by_model(self, model: dict) -> None:

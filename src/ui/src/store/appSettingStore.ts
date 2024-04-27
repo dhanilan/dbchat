@@ -28,7 +28,12 @@ export const appSettingStore = create<AppSettingStoreType>((set, get, _) => ({
         set({ loading: true });
         const api = new BaseApi();
         const appSetting = await api.GetOne<AppSetting>('settings');
-        set({ appSetting, loading: false });
+        if (appSetting) {
+            set({ appSetting, loading: false });
+        }
+        else {
+            set({ loading: false });
+        }
     },
     updateAppSetting: async (appSetting: AppSetting) => {
         set({ loading: true });
