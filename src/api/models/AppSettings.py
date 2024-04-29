@@ -21,3 +21,7 @@ class Conversation(BaseModel,BaseDbModel):
     connection_id: str = ""
     customer_id: str = "default"
     title : str = ""
+
+class ConversationWithMessages(BaseModel):
+    conversation: Conversation
+    messages: List[ConversationMessage]

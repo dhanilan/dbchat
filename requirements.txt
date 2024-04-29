@@ -6,3 +6,4 @@ pydantic-settings
 pyautogen
 sqlalchemy
 psychopg2
+openai
