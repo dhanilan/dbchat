@@ -11,7 +11,7 @@ from db_chat.sql_builder.schema import Schema, Query
 # tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 
 
-config_list = [{"model": "gpt-4-1106-preview", "api_key":os.environ["OPENAI_API_KEY"]}]
+# config_list = [{"model": "gpt-4-1106-preview", "api_key":os.environ["OPENAI_API_KEY"]}]
 
 
 def build_schema_prompt(schema: Schema):
@@ -58,54 +58,47 @@ Question: {input}
 
 
 def react_prompt_message(sender, recipient, context):
-    return ReAct_prompt.format(input=context["question"])
+    return ReAct_prompt.format(input=context["question"],schema_description=context["schema_description"])
 
 
 
-user_proxy = UserProxyAgent(
-    name="User",
-    is_termination_msg=lambda x: x.get("content", "") and (x.get("content", "").rstrip().endswith("TERMINATE") or x.get("content", "") == "MORE_INFO_NEEDED"),
-    human_input_mode="NEVER",
-    max_consecutive_auto_reply=10,
+def getUserProxyAgent():
+    user_proxy = UserProxyAgent(
+        name="User",
+        is_termination_msg=lambda x: x.get("content", "") and (x.get("content", "").rstrip().endswith("TERMINATE") or x.get("content", "") == "MORE_INFO_NEEDED"),
+        human_input_mode="NEVER",
+        max_consecutive_auto_reply=10,
 
-)
+    )
+    return user_proxy
 
 
+def getAssistantAgent(config_list):
+    assistant = AssistantAgent(
+        name="Assistant",
 
-assistant = AssistantAgent(
-    name="Assistant",
+        system_message="Only use the tools you have been provided with. Reply TERMINATE when the task is done.Reply MORE_INFO_NEEDED if you need more information along with the question to the user.",
+        llm_config={"config_list": config_list, "cache_seed": None},
+    )
+    return assistant
 
-    system_message="Only use the tools you have been provided with. Reply TERMINATE when the task is done.Reply MORE_INFO_NEEDED if you need more information along with the question to the user.",
-    llm_config={"config_list": config_list, "cache_seed": None},
-)
-
+def register_agent(assistant,user_proxy):
 # Register the search tool.
-register_function(
-    sql_executor_tool,
-    caller=assistant,
-    executor=user_proxy,
-    name="sql_executor_tool",
-    description="""Exectues the given query against the database and returns the result. The query should follow the rules below:
-    1. The argument will only contain the below listed keys
-    2. `table` key will contain the name of the table to fetch the data from
-    3. `joins` - dictionary of joins to apply to the query, where key is the alias of join. Each join will have the following keys
-            3.a. `type` -  Allowed values are `inner`, `left`, `right`, `full`
-            3.b. `table` - Name of the table to join with
-            3.c. `field` - Field of the current table to join with
-            3.d. `related_field` - Field of the joined table to join with
-
-    3. `fields` key will contain the list of fields to fetch from the chosen table.Join fields are represented `join alias`.`field` . Fields of each table will be listed in a separate list after the rules. Join fields will be listed in the same list as the table fields.
-    4. `filters` key will contain the list of filters to apply to the query. Each filter will have a 'field', 'operator' and 'value'. Allowed operators are 'eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'
-    5. `sort` -  will  have a 'field' and 'direction'.
-        4.a. `field` - Field to sort to sort by. Use columns from the chosen `table` only . Do not make up new columns.
-        4.b. `direction` - Allowed direction are 'asc' and 'desc'.
-    6. `limit` key will contain the number of rows to limit the result to
-    7. `offset` key will contain the number of rows to offset the result by""",
-)
+    register_function(
+        sql_executor_tool,
+        caller=assistant,
+        executor=user_proxy,
+        name="sql_executor_tool",
+        description="""Exectues the given query against the database and returns the result. """,
+    )
 
 # Cache LLM responses. To get different responses, change the cache_seed value.
 
-def ask_llm(question:str, schema:Schema):
+def ask_llm(question:str, schema:Schema,api_key:str):
+    config_list = [{"model": "gpt-4-1106-preview", "api_key": api_key}]
+    assistant = getAssistantAgent(config_list)
+    user_proxy = getUserProxyAgent()
+    register_agent(assistant,user_proxy)
     with Cache.disk(cache_seed=43) as cache:
         result = user_proxy.initiate_chat(
             assistant,
@@ -116,5 +109,5 @@ def ask_llm(question:str, schema:Schema):
             summary_method="reflection_with_llm"
 
         )
-        print(result)
-        return result
+        print(result.summary)
+        return result.summary

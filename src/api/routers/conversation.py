@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from api.settings import settings
-from api.models.model_map import CONST_TABLE_NAME_APP_SETTINGS, CONST_TABLE_NAME_CONVERSATION,CONST_TABLE_NAME_CONVERSATION_MESSAGE
+from api.models.model_map import CONST_TABLE_NAME_APP_SETTINGS, CONST_TABLE_NAME_CONVERSATION,CONST_TABLE_NAME_CONVERSATION_MESSAGE,CONST_TABLE_NAME_CONNECTIONS
 from api.models.AppSettings import AppSettings, Conversation,ConversationMessage
 from api.dependencies import getRepository
 from api.agents.chat_manager import ChatManager
@@ -59,6 +59,9 @@ async def create_conversation_message(conversation_message: ConversationMessage,
     appSettingsRepository = getRepository(CONST_TABLE_NAME_APP_SETTINGS,settings)
     app_settings:AppSettings  = appSettingsRepository.get_one_by_model({"customer_id":conversation.customer_id})
 
+    connectionRepository = getRepository(CONST_TABLE_NAME_CONNECTIONS,settings)
+    connection = connectionRepository.get_by_id(conversation.connection_id)
+
     if (app_settings is None or app_settings.oai_api_key is None or  app_settings.oai_api_key == ""):
         response = ConversationMessage(
                                    text= f"Please provide an API Key in the settings to use the chatbot.",
@@ -68,7 +71,7 @@ async def create_conversation_message(conversation_message: ConversationMessage,
                                    )
     else:
         chat_manager = ChatManager(app_settings)
-        response_message = chat_manager.get_response(conversation_id,conversation_message)
+        response_message = chat_manager.get_response(conversation,conversation_message,connection)
 
         response = ConversationMessage(
                                     text= f'{response_message}',

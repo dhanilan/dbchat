@@ -38,7 +38,7 @@ class Filter:
     class to represent a filter
     """
 
-    field: any
+    field: str
     operator: FilterOperator
     value: str
 
