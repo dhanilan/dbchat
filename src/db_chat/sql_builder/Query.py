@@ -5,6 +5,9 @@ import dataclasses
 
 
 from enum import Enum
+from typing import Annotated, List
+
+from pydantic import Field
 
 
 @dataclasses.dataclass
@@ -61,9 +64,9 @@ class Expression:
     Class to encapsulate a complex field
     """
 
-    func: str
-    params: list[str] = dataclasses.field(default_factory=lambda: [])
-    label: str = None
+    func: Annotated[ str, Field(description ="Optional. The aggregated function to be applied to the field")]
+    params: List[Annotated[str,Field(description="List of params to the aggregate function. It can be fields or constants")]] = dataclasses.field(default_factory=lambda: [])
+    label: Annotated[str, Field(description=" Label or alias for the select column in query")] = None
 
 
 @dataclasses.dataclass
@@ -91,11 +94,12 @@ class Query:
     Class to encapsulate the SQL query
     """
 
-    table: str
-    fields: list[str | Expression] = dataclasses.field(default_factory=lambda: [])
-    filters: list[Filter] = dataclasses.field(default_factory=lambda: [])
-    group_by: list[str | Expression] = dataclasses.field(default_factory=lambda: [])
-    sort: SortOrder = None
+    table: Annotated[str,Field(description= "The name of the table. The table should be from the schema only")]
+    fields: Annotated[List[ Annotated[str,Field(description="The select field name. In case of joined field use join alias followed by dot notation and then field name of joined column")] |
+                 Annotated[ Expression,Field(description=" Expression in case of an aggregate function on a field")]], Field(description="List of fields . string in case of direct fields. If a aggregate funtion, use an expression object with func, list of parameters and alias name")] = dataclasses.field(default_factory=lambda: [])
+    filters: list[Annotated[Filter,Field(description="List of filters to apply")]] = dataclasses.field(default_factory=lambda: [])
+    group_by:Annotated[ list[str], Field(description=" The list of columns in the fields select to group by")] = dataclasses.field(default_factory=lambda: [])
+    sort: Annotated[SortOrder,Field(description=" Sort field name and sort direction")] = None
     limit: int = None
     offset: int = None
     joins: dict[str, Join] = dataclasses.field(default_factory=lambda: {})

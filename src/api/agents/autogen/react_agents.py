@@ -7,12 +7,21 @@ from autogen import AssistantAgent, UserProxyAgent, register_function
 from autogen.cache import Cache
 
 from db_chat.sql_builder.schema import Schema, Query
+from db_chat.sql_builder.sqlalchemy_query_builder import SQLAlchemyQueryBuilder
 
 # tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 
 
 # config_list = [{"model": "gpt-4-1106-preview", "api_key":os.environ["OPENAI_API_KEY"]}]
 
+def get_sql_executor_tool(schema: Schema):
+
+    def sql_executor_tool(query: Annotated[Query, "The query that will be executed"]) -> Annotated[str, "The result of the query"]:
+        query_builder = SQLAlchemyQueryBuilder(schema)
+        sql = query_builder.build_query(query)
+
+        return sql
+    return sql_executor_tool
 
 def build_schema_prompt(schema: Schema):
     """
@@ -28,8 +37,8 @@ def build_schema_prompt(schema: Schema):
         prompt += "\n"
     return prompt
 
-def sql_executor_tool(query: Annotated[Query, "The query that will be executed"]) -> Annotated[str, "The result of the query"]:
-    return 24
+# def sql_executor_tool(query: Annotated[Query, "The query that will be executed"]) -> Annotated[str, "The result of the query"]:
+#     return 24
 
 
 # NOTE: this ReAct prompt is adapted from Langchain's ReAct agent: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/agents/react/agent.py#L79
@@ -82,7 +91,8 @@ def getAssistantAgent(config_list):
     )
     return assistant
 
-def register_agent(assistant,user_proxy):
+def register_agent(assistant,user_proxy,schema):
+    sql_executor_tool = get_sql_executor_tool(schema)
 # Register the search tool.
     register_function(
         sql_executor_tool,
@@ -98,16 +108,16 @@ def ask_llm(question:str, schema:Schema,api_key:str):
     config_list = [{"model": "gpt-4-1106-preview", "api_key": api_key}]
     assistant = getAssistantAgent(config_list)
     user_proxy = getUserProxyAgent()
-    register_agent(assistant,user_proxy)
-    with Cache.disk(cache_seed=43) as cache:
-        result = user_proxy.initiate_chat(
-            assistant,
-            message=react_prompt_message,
-            question=question,
-            schema_description=build_schema_prompt(schema),
-            cache=cache,
-            summary_method="reflection_with_llm"
+    register_agent(assistant,user_proxy,schema)
+    # with Cache.disk(cache_seed=45) as cache:
+    result = user_proxy.initiate_chat(
+        assistant,
+        message=react_prompt_message,
+        question=question,
+        schema_description=build_schema_prompt(schema),
+        # cache=cache,
+        summary_method="reflection_with_llm"
 
-        )
-        print(result.summary)
-        return result.summary
+    )
+        # print(result.summary)
+    return result.summary
