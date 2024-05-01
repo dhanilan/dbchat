@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pydantic import BaseModel
+
 from db_chat.sql_builder.schema import Column, Schema, Table
 from sqlalchemy import Label, alias, and_, select, table, column, TableClause, func, ColumnClause
 from db_chat.sql_builder.Filter import Filter
@@ -9,6 +11,11 @@ from db_chat.sql_builder.FilterOperator import FilterOperator
 
 from db_chat.sql_builder.Query import Expression, Functions, Query
 from db_chat.sql_builder.mappings import Relationship
+
+
+class ValidationError(BaseModel):
+    message: str
+
 
 
 class SQLAlchemyQueryBuilder:
@@ -24,6 +31,44 @@ class SQLAlchemyQueryBuilder:
 
     def __init__(self, schema: Schema):
         self.schema = schema
+
+    def validate(self,query:Query):
+        """
+        Validate the query
+        """
+
+        validation_errors:list[ValidationError] = []
+        if query.table not in self.schema.tables:
+            validation_errors.append(ValidationError(message= f"Table {query.table} not found in schema"))
+
+        for join in query.joins:
+            if join.table not in self.schema.tables:
+                validation_errors.append(ValidationError(message= f"Table {join.table} not found in schema"))
+
+        for filter_obj in query.filters:
+            if not self._is_expression(filter_obj.field):
+                if not self._is_field_of_table(filter_obj.field, query.table):
+                    validation_errors.append(ValidationError(message= f"Field {filter_obj.field} not found in table {query.table}"))
+
+        for group_by_field in query.group_by:
+            if not self._is_field_of_table(group_by_field, query.table):
+                validation_errors.append(ValidationError(message= f"Field {group_by_field} not found in table {query.table}"))
+
+        for field in query.fields:
+            if self._is_expression(field):
+                for param in field.parameters:
+                    if not self._is_expression(param):
+                        if not self._is_field_of_table(param, query.table):
+                            validation_errors.append(ValidationError(message= f"Field {param} not found in table {query.table}"))
+
+                field.func = field.func.upper()
+                if field.func not in [func.value for func in Functions]:
+                    validation_errors.append(ValidationError(message= f"Invalid function {field.func}"))
+            else:
+                if not self._is_field_of_table(field, query.table):
+                    validation_errors.append(ValidationError(message= f"Field {field} not found in table {query.table}"))
+
+        return validation_errors
 
     def build_query(self, query: Query):
         """
@@ -267,7 +312,7 @@ class SQLAlchemyQueryBuilder:
     ):
         function_parms = []
 
-        for func_param in expression.params:
+        for func_param in expression.parameters:
             if not self._is_expression(func_param):
                 # if not a expression check if it is a field of the table
                 is_field_of_table = self._is_field_of_table(func_param, query.table)
@@ -293,7 +338,7 @@ class SQLAlchemyQueryBuilder:
                     # if not a field of the table then it is a constant
                     function_parms.append(func_param)
 
-        sa_function = self._get_sa_function(expression.func, function_parms, expression.label)
+        sa_function = self._get_sa_function(expression.func, function_parms, expression.alias)
 
         return sa_function
 
@@ -302,12 +347,30 @@ class SQLAlchemyQueryBuilder:
         if func_name == Functions.SUM.value:
             sa_function = func.sum(*function_parms)
 
+        if func_name == Functions.AVG.value:
+            sa_function = func.avg(*function_parms)
+
+        if func_name == Functions.COUNT.value:
+            sa_function = func.count(*function_parms)
+        if func_name == Functions.MAX.value:
+            sa_function = func.max(*function_parms)
+
+        if func_name == Functions.MIN.value:
+            sa_function = func.min(*function_parms)
+
+
+
         if label:
             sa_function = sa_function.label(label)
 
         return sa_function
 
-    def _is_expression(self, input_str: str):
+    def _is_expression(self, input_str: str|Expression):
+        if type(input_str) == Expression or  type(input_str) == dict:
+            return True
+        else:
+            return False
+
         if isinstance(input_str, Expression):
             return True
         if "(" in input_str:

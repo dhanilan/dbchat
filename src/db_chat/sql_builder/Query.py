@@ -55,6 +55,7 @@ class Functions(str, Enum):
     MIN = "MIN"
     MAX = "MAX"
     AVG = "AVG"
+    COUNT = "COUNT"
     CURRENT_DATE = "CURRENT_DATE"
 
 
@@ -65,8 +66,8 @@ class Expression:
     """
 
     func: Annotated[ str, Field(description ="Optional. The aggregated function to be applied to the field")]
-    params: List[Annotated[str,Field(description="List of params to the aggregate function. It can be fields or constants")]] = dataclasses.field(default_factory=lambda: [])
-    label: Annotated[str, Field(description=" Label or alias for the select column in query")] = None
+    parameters: List[Annotated[str,Field(description="List of params to the aggregate function. It can be fields or constants")]] = dataclasses.field(default_factory=lambda: [])
+    alias: Annotated[str, Field(description=" Label or alias for the select column in query")] = None
 
 
 @dataclasses.dataclass

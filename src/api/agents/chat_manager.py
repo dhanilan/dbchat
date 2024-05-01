@@ -10,7 +10,7 @@ class ChatManager:
         self.llm_config = {"config_list": [{"model": "gpt-4", "api_key": self.app_settings.oai_api_key}]}
 
     def get_response(self, conversation:Conversation,message:ConversationMessage,connection:Connection):
-        response = ask_llm(message.text, connection.connection_schema, self.app_settings.oai_api_key)
+        response = ask_llm(message.text, connection.connection_schema, self.app_settings.oai_api_key, connection.connection_string)
         # agent = ConversableAgent(
         #     "chatbot",
         #     llm_config=self.llm_config,

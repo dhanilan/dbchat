@@ -1,5 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
+from api.agents.autogen.react_agents import get_sql_executor_tool
+from api.models.Connections import Connection
 from api.settings import settings
 from api.models.model_map import CONST_TABLE_NAME_APP_SETTINGS, CONST_TABLE_NAME_CONVERSATION,CONST_TABLE_NAME_CONVERSATION_MESSAGE,CONST_TABLE_NAME_CONNECTIONS
 from api.models.AppSettings import AppSettings, Conversation,ConversationMessage
@@ -60,7 +62,25 @@ async def create_conversation_message(conversation_message: ConversationMessage,
     app_settings:AppSettings  = appSettingsRepository.get_one_by_model({"customer_id":conversation.customer_id})
 
     connectionRepository = getRepository(CONST_TABLE_NAME_CONNECTIONS,settings)
-    connection = connectionRepository.get_by_id(conversation.connection_id)
+    connection:Connection = connectionRepository.get_by_id(conversation.connection_id)
+
+
+    query = {
+
+            "table": "customer",
+            "fields": [
+            {
+                "func": "COUNT",
+                "parameters": ["customer_id"],
+                "alias": "customer_count"
+            }
+            ]
+
+    }
+    # result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
+    # print(result)
+    # return result
+    # raise "Not implemented yet."
 
     if (app_settings is None or app_settings.oai_api_key is None or  app_settings.oai_api_key == ""):
         response = ConversationMessage(

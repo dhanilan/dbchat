@@ -7,3 +7,4 @@ pyautogen
 sqlalchemy
 psychopg2
 openai
+pytest
