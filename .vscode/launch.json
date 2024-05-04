@@ -6,9 +6,9 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
-            "cwd": "${workspaceFolder}/src/api",
+            "cwd": "${workspaceFolder}/src",
             "args": [
-                "main:app",
+                "api.main:app",
                 "--reload"
             ],
             "jinja": true,
