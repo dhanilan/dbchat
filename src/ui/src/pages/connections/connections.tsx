@@ -22,14 +22,40 @@ const Connections: React.FC<SettingsProps> = () => {
 
 
     useEffect(() => {
-        setName(store.connection.name);
-        setCurrentConnection(store.connection);
-        setConnectionString(store.connection.connection_string);
+        if (store.connection) {
+            setName(store.connection.name);
+            setCurrentConnection(store.connection);
+            setConnectionString(store.connection.connection_string);
+        }
+
     }, [store.connection]);
 
     const handleSubmit = (e: any) => {
         e.preventDefault();
-        store.updateConnection({
+        if (currentConnection.id) {
+            store.updateConnection({
+                id: currentConnection.id,
+                name: name,
+                connection_string: connectionString,
+                connection_schema: store.connection.connection_schema,
+                customer_id: store.connection.customer_id,
+
+            });
+        }
+        else {
+            store.createConnection({
+                name: name,
+                connection_string: connectionString,
+                connection_schema: store.connection.connection_schema,
+                customer_id: store.connection.customer_id,
+            });
+        }
+
+        console.log('submit');
+    }
+    const createSchema = () => {
+
+        store.setCurrentConnection({
             id: currentConnection.id,
             name: name,
             connection_string: connectionString,
@@ -37,9 +63,6 @@ const Connections: React.FC<SettingsProps> = () => {
             customer_id: store.connection.customer_id,
 
         });
-        console.log('submit');
-    }
-    const createSchema = () => {
         store.createSchema({
             id: currentConnection.id,
             name: name,
