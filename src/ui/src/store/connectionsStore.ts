@@ -27,7 +27,12 @@ export type ConnectionsStoreType = {
 export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
     connections: [],
 
-    connection: {},
+    connection: {
+        name: '',
+        connection_string: '',
+        connection_schema: {},
+        customer_id: 'default'
+    },
     loading: false,
     initialize: async () => {
 
@@ -96,7 +101,7 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         const api = new BaseApi();
         const currentConnection = get().connection;
 
-        const schema = await api.create<Connection>(`connections/${currentConnection.id}/schema`, currentConnection);
+        const schema = await api.create<Connection>(`connections/${currentConnection.id || 'new'}/schema`, currentConnection);
         set({ connection: { ...currentConnection, connection_schema: schema }, loading: false });
     }
 }));

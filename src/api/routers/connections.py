@@ -1,5 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 from api.settings import settings
 from api.models.model_map import CONST_TABLE_NAME_CONNECTIONS
 from api.models.Connections import Connection
@@ -46,7 +47,12 @@ async def read_connection_schema(connection_id: str):
     connection  = repository.get_one_by_model({"id":connection_id})
     return connection.connection_schema.dict()
 
+
+
+class CreateSchemaRequest(BaseModel):
+    connection_string:  str
+
 @router.post("/connections/{connection_id}/schema", tags=["connections"])
-async def create_connection_schema(connection: Connection):
+async def create_connection_schema(connection: CreateSchemaRequest):
     schema = build_schema(connection.connection_string)
     return schema

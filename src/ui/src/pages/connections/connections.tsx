@@ -25,10 +25,13 @@ const Connections: React.FC<SettingsProps> = () => {
 
 
     useEffect(() => {
-        setName(store.connection.name);
-        setCurrentConnection(store.connection);
-        setConnectionString(store.connection.connection_string);
-        setConnectionSchema(store.connection.connection_schema);
+
+        if (store.connection) {
+            setName(store.connection.name);
+            setCurrentConnection(store.connection);
+            setConnectionString(store.connection.connection_string);
+            setConnectionSchema(store.connection.connection_schema);
+        }
 
     }, [store.connection]);
 
@@ -43,7 +46,30 @@ const Connections: React.FC<SettingsProps> = () => {
             alert('Please enter a connection schema');
         }
         e.preventDefault();
-        store.updateConnection({
+        if (currentConnection.id) {
+            store.updateConnection({
+                id: currentConnection.id,
+                name: name,
+                connection_string: connectionString,
+                connection_schema: store.connection.connection_schema,
+                customer_id: store.connection.customer_id,
+
+            });
+        }
+        else {
+            store.createConnection({
+                name: name,
+                connection_string: connectionString,
+                connection_schema: store.connection.connection_schema,
+                customer_id: store.connection.customer_id,
+            });
+        }
+
+        console.log('submit');
+    }
+    const createSchema = () => {
+
+        store.setCurrentConnection({
             id: currentConnection.id,
             name: name,
             connection_string: connectionString,
@@ -51,17 +77,8 @@ const Connections: React.FC<SettingsProps> = () => {
             customer_id: store.connection.customer_id,
 
         });
-        console.log('submit');
-    }
-    const createSchema = () => {
-        store.setConnectionDetails({
-            id: currentConnection.id,
-            name: name,
-            connection_string: connectionString,
-            connection_schema: store.connection.connection_schema,
-            customer_id: store.connection.customer_id,
-        });
         store.createSchema();
+
     }
     const createConnection = () => {
         store.createConnection({ name: 'New Connection' });
