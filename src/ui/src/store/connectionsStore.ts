@@ -21,7 +21,8 @@ export type ConnectionsStoreType = {
     createConnection: (connection: Connection) => Promise<void>;
     updateConnection: (connection: Connection) => Promise<void>;
     deleteConnection: (id: string) => Promise<void>;
-    createSchema: (connection: Connection) => Promise<void>;
+    createSchema: () => Promise<void>;
+    setConnectionDetails: (connection: Connection) => void;
 }
 export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
     connections: [],
@@ -42,6 +43,7 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
 
     },
     setCurrentConnection: (connection: Connection) => {
+        console.log('setting connection');
         set({ connection });
     },
     getConnections: async (setCurrent: boolean = false) => {
@@ -55,7 +57,7 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
             set({ loading: false });
         }
         if (setCurrent && connections.length > 0) {
-            set({ connection: connections[0] });
+            // set({ connection: connections[0] });
         }
     },
     createConnection: async (connection: Connection) => {
@@ -85,6 +87,9 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         await api.delete<Connection>('connections', id);
         const connections = get().connections.filter((c) => c.customer_id !== id);
         set({ connections, loading: false });
+    },
+    setConnectionDetails: (connection: Connection) => {
+        set({ connection });
     },
     createSchema: async () => {
         set({ loading: true });

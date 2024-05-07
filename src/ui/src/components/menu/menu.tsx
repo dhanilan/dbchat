@@ -1,6 +1,7 @@
 import React from 'react';
 import { MenuItem } from '../../types';
 import { conversationStore } from '../../store/chatConversationStore';
+import { connectionsStore } from '../../store/connectionsStore';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -11,8 +12,24 @@ interface MenuProps {
 
 const Menu: React.FC<MenuProps> = ({ items }) => {
     const store = conversationStore();
+    const connectionsStoreInstance = connectionsStore();
 
     const allConversations = store.allConversations;
+
+    const connections = connectionsStoreInstance.connections;
+
+    const firstConnection = connections && connections.length ? connections[0] : null;
+
+    const onCreateConversation = async () => {
+        if (firstConnection && firstConnection.id) {
+            await store.createConversation(firstConnection.id ?? '', 'New Conversation',);
+
+        }
+        else {
+            alert('Please add a connection first');
+        }
+    }
+
     const navigate = useNavigate();
 
     const handleItemClick = (id: string) => {
@@ -31,7 +48,7 @@ const Menu: React.FC<MenuProps> = ({ items }) => {
 
             <ul className='list-unstyled pt-4'>
                 <li className={`nav-menu-item pb-2 `} >
-                    <a href='#' className='nav-menu-item-link pd-4 text-decoration-none' onClick={() => store.createConversation()}>
+                    <a href='#' className='nav-menu-item-link pd-4 text-decoration-none' onClick={onCreateConversation}>
                         <i className='fa fa-plus p-2'></i>
                         Create New
                     </a>

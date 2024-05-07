@@ -1,7 +1,7 @@
 export class BaseApi {
     base_url: string;
     constructor() {
-        this.base_url = import.meta.env.VITE_API_URL;
+        this.base_url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     }
     public async Get<T>(url: string, params: URLSearchParams = new URLSearchParams({})): Promise<T[]> {
         const response = await fetch(`${this.base_url}/${url}?` + params, {
