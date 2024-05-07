@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Container, Form, Button, Dropdown, DropdownButton, InputGroup } from 'react-bootstrap';
-import { connectionsStore } from '../../store/connectionsStore';
+import { Connection, connectionsStore } from '../../store/connectionsStore';
 import { JsonEditor as Editor } from 'jsoneditor-react';
 import 'jsoneditor-react/es/editor.min.css';
 
@@ -33,19 +33,23 @@ const Connections: React.FC<SettingsProps> = () => {
             setConnectionSchema(store.connection.connection_schema);
         }
 
-    }, [store.connection]);
+    }, [store.connection, store.connection.connection_schema]);
+
+    const handleConnectionChange = (e: Connection) => {
+        store.setConnectionDetails(e);
+
+    }
 
     const handleSubmit = (e: any) => {
-        if (!currentConnection.id) {
-            return;
-        }
+        console.log('submit');
+
         if (!name || !connectionString) {
             alert('Please enter a name and connection string');
         }
         if (!connectionSchema) {
             alert('Please enter a connection schema');
         }
-        e.preventDefault();
+
         if (currentConnection.id) {
             store.updateConnection({
                 id: currentConnection.id,
@@ -66,6 +70,7 @@ const Connections: React.FC<SettingsProps> = () => {
         }
 
         console.log('submit');
+        e.preventDefault();
     }
     const createSchema = () => {
 
@@ -98,7 +103,7 @@ const Connections: React.FC<SettingsProps> = () => {
                     title={<><i className='bold'>Connection: </i>  <span>{currentConnection.name || 'Select Connection'}</span></>}
                 >
                     {store.connections.map((connection, index) => (
-                        <Dropdown.Item key={index} active={connection.id == currentConnection.id} eventKey={connection.id} onClick={() => setCurrentConnection(connection)}>{connection.name}
+                        <Dropdown.Item key={index} active={connection.id == currentConnection.id} eventKey={connection.id} onClick={() => handleConnectionChange(connection)}>{connection.name}
                             <i className='fa fa-trash pl-4 cursor-pointer' onClick={() => store.deleteConnection(connection.id as string)}></i>
                         </Dropdown.Item>
                     ))}
@@ -132,10 +137,12 @@ const Connections: React.FC<SettingsProps> = () => {
                         {/* <Button variant="outline-secondary">Button</Button> */}
                     </InputGroup>
 
-                    <Editor
-                        value={{ ...connectionSchema }}
+                    <textarea rows={30} value={JSON.stringify(connectionSchema)} onChange={(e) => setConnectionSchema(JSON.parse(e.target.value))}></textarea>
 
-                    />
+                    {/* <Editor
+                        value={connectionSchema}
+
+                    /> */}
 
                     <Button variant="primary" type="submit" onClick={handleSubmit}>
                         Save
