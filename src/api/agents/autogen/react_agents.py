@@ -11,30 +11,45 @@ from db_chat.sql_builder.Filter import Filter
 from db_chat.sql_builder.Query import Expression
 from db_chat.sql_builder.schema import Schema, Query
 from db_chat.sql_builder.sqlalchemy_query_builder import SQLAlchemyQueryBuilder
-
+import traceback
 # tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 
 
 # config_list = [{"model": "gpt-4-1106-preview", "api_key":os.environ["OPENAI_API_KEY"]}]
 
+
+def log_query_from_llm(query: str):
+    with open("llm_queries.txt", "a") as f:
+        f.write(query + "\n")
+def log_exception_from_llm(query:Query,exception: str):
+    print(exception)
+    with open("llm_exceptions.txt", "a") as f:
+        f.write("==============================: \n")
+        f.write("Exception occured for query: \n")
+        f.write(query.model_dump() + "\n")
+        f.write("Exception is: " + "\n")
+        f.write(exception + "\n")
+
+
 def get_sql_executor_tool(schema: Schema,connection_string:str):
 
     def sql_executor_tool(query: Annotated[Query, "The query that will be executed"]) -> Annotated[str, "The result of the query"]:
+
+
         query_builder = SQLAlchemyQueryBuilder(schema)
-        query = Query(**query)
-        for index,field in enumerate( query.fields):
-            if isinstance(field, str):
-                continue
-            else:
-                query.fields[index] = Expression(**field)
 
-        for index,filter in enumerate(query.filters):
-            query.filters[index] = Filter(**filter)
+        try:
+            query = Query.model_validate(query)
 
-        validation_errors = query_builder.validate(query)
-        if validation_errors and len(validation_errors) > 0:
-            raise ValueError(validation_errors)
-        sql = query_builder.build_query(query)
+            validation_errors = query_builder.validate(query)
+            if validation_errors and len(validation_errors) > 0:
+                raise ValueError(validation_errors)
+
+            sql = query_builder.build_query(query)
+        except Exception as e:
+            log_exception_from_llm(traceback.format_exc())
+
+            return "error occured durring execution" + str(e)
 
         print(sql)
         try:

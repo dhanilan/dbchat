@@ -65,18 +65,21 @@ async def create_conversation_message(conversation_message: ConversationMessage,
     connection:Connection = connectionRepository.get_by_id(conversation.connection_id)
 
 
+
     query = {
 
-            "table": "customer",
-            "fields": [
-            {
-                "func": "COUNT",
-                "parameters": ["customer_id"],
-                "alias": "customer_count"
-            }
-            ]
+    "table": "customer",
+    "fields": [
+      {
+        "func": "COUNT",
+        "parameters": [
+          "DISTINCT customer_id"
+        ],
+        "alias": "customer_count"
+      }
+    ]
+  }
 
-    }
     # result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
     # print(result)
     # return result

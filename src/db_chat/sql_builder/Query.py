@@ -7,11 +7,11 @@ import dataclasses
 from enum import Enum
 from typing import Annotated, List
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 
-@dataclasses.dataclass
-class SortOrder:
+
+class SortOrder(BaseModel):
     """
     Class to hold the sort direction and field
     """
@@ -35,8 +35,7 @@ class FilterOperator(str, Enum):
     in_ = "in"
 
 
-@dataclasses.dataclass
-class Filter:
+class Filter(BaseModel):
     """
     class to represent a filter
     """
@@ -59,8 +58,8 @@ class Functions(str, Enum):
     CURRENT_DATE = "CURRENT_DATE"
 
 
-@dataclasses.dataclass
-class Expression:
+
+class Expression(BaseModel):
     """
     Class to encapsulate a complex field
     """
@@ -70,8 +69,8 @@ class Expression:
     alias: Annotated[str, Field(description=" Label or alias for the select column in query")] = None
 
 
-@dataclasses.dataclass
-class Join:
+
+class Join(BaseModel):
     """
     Class to encapsulate a join
     """
@@ -89,8 +88,7 @@ class Join:
             raise ValueError("Invalid join type")
 
 
-@dataclasses.dataclass
-class Query:
+class Query(BaseModel):
     """
     Class to encapsulate the SQL query
     """
