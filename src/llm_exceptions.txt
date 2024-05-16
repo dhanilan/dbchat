@@ -1,0 +1,84 @@
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+==============================: 
+Exception occured for query: 
+{"table": "employee", "fields": [{"func": "COUNT", "parameters": ["employee_id"], "alias": "IT_Staff_Count"}], "filters": [{"field": "title", "operator": "like", "value": "%IT%"}], "group_by": [], "sort": null, "limit": null, "offset": null, "joins": {}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 42, in sql_executor_tool
+    query = Query.model_validate(query)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/.venv/lib/python3.12/site-packages/pydantic/main.py", line 532, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for Query
+sort
+  Input should be a valid dictionary or instance of SortOrder [type=model_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/model_type
+limit
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+offset
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+
+==============================: 
+Exception occured for query: 
+{"table": "employee", "fields": [{"func": "COUNT", "parameters": ["employee_id"], "alias": "IT_Staff_Count"}], "filters": [{"field": "title", "operator": "like", "value": "%IT%"}], "group_by": [], "sort": null, "limit": null, "offset": null, "joins": {}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 42, in sql_executor_tool
+    query = Query.model_validate(query)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/.venv/lib/python3.12/site-packages/pydantic/main.py", line 532, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for Query
+sort
+  Input should be a valid dictionary or instance of SortOrder [type=model_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/model_type
+limit
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+offset
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+
+==============================: 
+Exception occured for query: 
+{"table": "employee", "fields": [{"func": "COUNT", "parameters": ["employee_id"], "alias": "IT_Staff_Count"}], "filters": [{"field": "title", "operator": "like", "value": "%IT%"}], "group_by": [], "sort": null, "limit": null, "offset": null, "joins": {}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 42, in sql_executor_tool
+    query = Query.model_validate(query)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/.venv/lib/python3.12/site-packages/pydantic/main.py", line 532, in model_validate
+    return cls.__pydantic_validator__.validate_python(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pydantic_core._pydantic_core.ValidationError: 3 validation errors for Query
+sort
+  Input should be a valid dictionary or instance of SortOrder [type=model_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/model_type
+limit
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+offset
+  Input should be a valid integer [type=int_type, input_value=None, input_type=NoneType]
+    For further information visit https://errors.pydantic.dev/2.7/v/int_type
+
+==============================: 
+Exception occured for query: 

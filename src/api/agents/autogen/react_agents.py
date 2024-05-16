@@ -1,6 +1,6 @@
 import os
 from typing import Annotated
-
+import json
 
 from autogen import AssistantAgent, UserProxyAgent, register_function
 
@@ -26,7 +26,7 @@ def log_exception_from_llm(query:Query,exception: str):
     with open("llm_exceptions.txt", "a") as f:
         f.write("==============================: \n")
         f.write("Exception occured for query: \n")
-        f.write(query.model_dump() + "\n")
+        f.write(""+  json.dumps( query) + "\n")
         f.write("Exception is: " + "\n")
         f.write(exception + "\n")
 
@@ -47,7 +47,7 @@ def get_sql_executor_tool(schema: Schema,connection_string:str):
 
             sql = query_builder.build_query(query)
         except Exception as e:
-            log_exception_from_llm(traceback.format_exc())
+            log_exception_from_llm(query,traceback.format_exc())
 
             return "error occured durring execution" + str(e)
 

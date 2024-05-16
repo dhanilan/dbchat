@@ -243,6 +243,14 @@ class SQLAlchemyQueryBuilder:
 
         filter_clause = {
             f"{FilterOperator.eq.value}": lambda x, y: x == y,
+            f"{FilterOperator.neq.value}": lambda x, y: x != y,
+            f"{FilterOperator.gt.value}": lambda x, y: x > y,
+            f"{FilterOperator.gte.value}": lambda x, y: x >= y,
+            f"{FilterOperator.lt.value}": lambda x, y: x < y,
+            f"{FilterOperator.lte.value}": lambda x, y: x <= y,
+            f"{FilterOperator.like.value}": lambda x, y: x.like(y),
+            f"{FilterOperator.in_.value}": lambda x, y: x.in_(y),
+
         }.get(
             operator
         )(sa_filter_column, filter_obj.value)

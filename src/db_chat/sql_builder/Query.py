@@ -99,8 +99,8 @@ class Query(BaseModel):
     filters: list[Annotated[Filter,Field(description="List of filters to apply")]] = dataclasses.field(default_factory=lambda: [])
     group_by:Annotated[ list[str], Field(description=" The list of columns in the fields select to group by")] = dataclasses.field(default_factory=lambda: [])
     sort: Annotated[SortOrder,Field(description=" Sort field name and sort direction")] = None
-    limit: int = None
-    offset: int = None
+    limit: Annotated[int,Field(description="No:of records to limit")]  = None
+    offset: Annotated[int,Field(description="No:of records to skip/ offset")] = None
     joins: dict[str, Join] = dataclasses.field(default_factory=lambda: {})
 
     # def __init__(self, **kwargs):
