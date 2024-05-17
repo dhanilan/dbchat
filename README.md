@@ -30,3 +30,12 @@ Goto setting to save the OPEN AI API key
 ## connect to dev container chinook db
 
 `postgresql+psycopg2://postgres:postgres@localhost:5432/chinook`
+
+
+
+## Roadmap
+- [ ] Complete image as docker and run ui and backend
+- [ ] fix bug of connections
+- [ ] Test for mysql , pg and sqllite etc
+- [ ] put a nice readme with how it works
+- [ ] clean up some code for now

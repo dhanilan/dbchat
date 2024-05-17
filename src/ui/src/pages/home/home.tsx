@@ -78,7 +78,7 @@ const Home: React.FC = () => {
 
                     </Row>
                     <Row>
-                        <Container>
+                        <Container className="message-view">
                             <Row>
 
                                 {messages.map((message) => (
