@@ -23,3 +23,79 @@ table
   Field required [type=missing, input_value={'query': {'table': 'genr...ike', 'value': 'Pop'}]}}, input_type=dict]
     For further information visit https://errors.pydantic.dev/2.7/v/missing
 
+==============================: 
+Exception occured for query: 
+{"table":"track","fields":["album.artist_id",{"func":"COUNT","parameters":["track_id"],"alias":"track_count"}],"filters":[],"group_by":["album.artist_id"],"sort":{"field":"track_count","direction":"DESC"},"limit":1,"offset":null,"joins":{}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 47, in sql_executor_tool
+    validation_errors = query_builder.validate(query)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 54, in validate
+    if not self._is_field_of_table(group_by_field, query.table):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 394, in _is_field_of_table
+    if self._get_field_from_table(table_name, input_str) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 448, in _get_field_from_table
+    return self.joined_tables[table_name].columns.get(field_name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'album'
+
+==============================: 
+Exception occured for query: 
+{"table":"track","fields":["track.album_id",{"func":"COUNT","parameters":["track_id"],"alias":"track_count"}],"filters":[],"group_by":["track.album_id"],"sort":{"field":"track_count","direction":"DESC"},"limit":1,"offset":null,"joins":{}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 47, in sql_executor_tool
+    validation_errors = query_builder.validate(query)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 54, in validate
+    if not self._is_field_of_table(group_by_field, query.table):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 394, in _is_field_of_table
+    if self._get_field_from_table(table_name, input_str) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 448, in _get_field_from_table
+    return self.joined_tables[table_name].columns.get(field_name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'track'
+
+==============================: 
+Exception occured for query: 
+{"table":"track","fields":["album.album_artist_artist_id",{"func":"COUNT","parameters":["track_id"],"alias":"track_count"}],"filters":[],"group_by":["album.album_artist_artist_id"],"sort":null,"limit":null,"offset":null,"joins":{}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 47, in sql_executor_tool
+    validation_errors = query_builder.validate(query)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 54, in validate
+    if not self._is_field_of_table(group_by_field, query.table):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 394, in _is_field_of_table
+    if self._get_field_from_table(table_name, input_str) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 448, in _get_field_from_table
+    return self.joined_tables[table_name].columns.get(field_name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'album'
+
+==============================: 
+Exception occured for query: 
+{"table":"track","fields":["album.artist_id",{"func":"COUNT","parameters":["track_id"],"alias":"track_count"}],"filters":[],"group_by":["album.artist_id"],"sort":{"field":"track_count","direction":"DESC"},"limit":1,"offset":null,"joins":{}}
+Exception is: 
+Traceback (most recent call last):
+  File "/workspaces/dbchat/src/api/agents/autogen/react_agents.py", line 47, in sql_executor_tool
+    validation_errors = query_builder.validate(query)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 54, in validate
+    if not self._is_field_of_table(group_by_field, query.table):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 394, in _is_field_of_table
+    if self._get_field_from_table(table_name, input_str) is not None:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspaces/dbchat/src/db_chat/sql_builder/sqlalchemy_query_builder.py", line 448, in _get_field_from_table
+    return self.joined_tables[table_name].columns.get(field_name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+KeyError: 'album'
+

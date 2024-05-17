@@ -33,7 +33,7 @@ const Connections: React.FC<SettingsProps> = () => {
             setConnectionSchema(store.connection.connection_schema);
         }
 
-    }, [store.connection, store.connection.connection_schema]);
+    }, [store, store.connection, store.connection.connection_schema]);
 
     const handleConnectionChange = (e: Connection) => {
         store.setConnectionDetails(e);
@@ -45,31 +45,23 @@ const Connections: React.FC<SettingsProps> = () => {
 
         if (!name || !connectionString) {
             alert('Please enter a name and connection string');
+            return false;
         }
         if (!connectionSchema) {
             alert('Please enter a connection schema');
+            return false;
         }
 
-        if (currentConnection.id) {
-            store.updateConnection({
-                id: currentConnection.id,
-                name: name,
-                connection_string: connectionString,
-                connection_schema: store.connection.connection_schema,
-                customer_id: store.connection.customer_id,
 
-            });
-        }
-        else {
-            store.createConnection({
-                name: name,
-                connection_string: connectionString,
-                connection_schema: store.connection.connection_schema,
-                customer_id: store.connection.customer_id,
-            });
-        }
+        store.updateConnection({
+            id: currentConnection.id,
+            name: name,
+            connection_string: connectionString,
+            connection_schema: store.connection.connection_schema,
+            customer_id: store.connection.customer_id,
 
-        console.log('submit');
+        });
+
         e.preventDefault();
     }
     const createSchema = () => {

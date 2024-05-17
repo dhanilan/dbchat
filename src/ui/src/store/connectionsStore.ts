@@ -40,6 +40,9 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         try {
             await get().getConnections(true);
             // set the first connection as the current connection
+            if (get().connections.length > 0) {
+                set({ connection: get().connections[0] });
+            }
 
         }
         catch (e) {
@@ -66,25 +69,38 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         }
     },
     createConnection: async (connection: Connection) => {
-        set({ loading: true });
+        // set({ loading: true });
 
-        const api = new BaseApi();
-        connection.customer_id = 'default';
-        const createdConnection = await api.create<Connection>('connections', connection);
-        set({ connections: [...get().connections, createdConnection], loading: false });
-        set({ connection: createdConnection })
+        const new_connection = {
+            name: 'new connection ' + get().connections.length + 1,
+            connection_string: connection.connection_string,
+            customer_id: connection.customer_id
+        }
+
+        set({ connection: new_connection })
+
+
+
     },
     updateConnection: async (connection: Connection) => {
         set({ loading: true });
         const api = new BaseApi();
-        const updatedConnection = await api.update<Connection>('connections', connection);
-        const connections = get().connections.map((c) => {
-            if (c.customer_id === updatedConnection.customer_id) {
-                return updatedConnection;
-            }
-            return c;
-        });
-        set({ connections, loading: false });
+
+        if (!connection.id) {
+            const createdConnection = await api.create<Connection>('connections', connection);
+            set({ connections: [...get().connections, createdConnection], loading: false });
+            set({ connection: createdConnection, loading: false })
+        }
+        else {
+            const updatedConnection = await api.update<Connection>('connections', connection);
+            const connections = get().connections.map((c) => {
+                if (c.customer_id === updatedConnection.customer_id) {
+                    return updatedConnection;
+                }
+                return c;
+            });
+            set({ connections, loading: false });
+        }
     },
     deleteConnection: async (id: string) => {
         set({ loading: true });
@@ -102,6 +118,7 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         const currentConnection = get().connection;
 
         const schema = await api.create<Connection>(`connections/${currentConnection.id || 'new'}/schema`, currentConnection);
+        debugger;
         set({ connection: { ...currentConnection, connection_schema: schema }, loading: false });
     }
 }));

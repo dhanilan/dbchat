@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MenuItem } from '../../types';
 import { conversationStore } from '../../store/chatConversationStore';
 import { connectionsStore } from '../../store/connectionsStore';
@@ -18,11 +18,17 @@ const Menu: React.FC<MenuProps> = ({ items }) => {
 
     const connections = connectionsStoreInstance.connections;
 
-    const firstConnection = connections && connections.length ? connections[0] : null;
+    const [firstConnection, setfirstConnection] = useState(connections && connections.length ? connections[0]?.id || '' : '');
+
+
+
+    useEffect(() => {
+        setfirstConnection(connections && connections.length ? connections[0]?.id || '' : '');
+    }, [connections]);
 
     const onCreateConversation = async () => {
-        if (firstConnection && firstConnection.id) {
-            await store.createConversation(firstConnection.id ?? '', 'New Conversation',);
+        if (firstConnection && firstConnection) {
+            await store.createConversation(firstConnection ?? '', 'New Conversation',);
 
         }
         else {

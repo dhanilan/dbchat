@@ -23,7 +23,7 @@ type ChatConversationStore = {
     messages: ConversationMessage[];
     currentConverstationId: string;
     initialize: (conversationId?: string) => Promise<void>;
-    addMessage: (message: ConversationMessage) => Promise<void>;
+    addMessage: (message: ConversationMessage, currentConnectionId: string) => Promise<void>;
     fetchAllConversations: () => Promise<void>;
     createConversation: (connectionId: string, title?: string) => Promise<void>;
     deleteConversation: (conversationId: string) => Promise<void>;
@@ -63,7 +63,7 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
         try {
             const conversations = await api.Get<Conversation>('conversation');
             set({ allConversations: conversations as any[] });
-            if (conversations.length > 0) {
+            if (conversations.length > 0 && !get().currentConverstationId) {
                 set({ currentConverstationId: conversations[0].id, title: conversations[0].title });
                 get().initialize(conversations[0].id);
             }
@@ -92,17 +92,34 @@ export const conversationStore = create<ChatConversationStore>((set, get) => ({
         }
     },
 
-    addMessage: async (message: ConversationMessage) => {
+    addMessage: async (message: ConversationMessage, currentConnectionId: string) => {
         // Add the message to the conversation
         set((state) => ({ messages: [...state.messages, message], wait_for_server: true }));
         // Send the message to the server
 
         const api = new BaseApi();
+        let conversation_id = get().currentConverstationId;
+        let newConversation = false;
 
         try {
-            const response_message: ConversationMessage = await api.create(`conversation/${get().currentConverstationId}/messages`, message);
-            set((state) => ({ messages: [...state.messages, response_message] }));
 
+            if (!conversation_id) {
+                newConversation = true;
+                // create a new conversation
+                // get().createConversation(currentConnectionId, 'New Conversation');
+                conversation_id = await api.create('conversation', {
+                    connection_id: currentConnectionId,
+                    title: 'New Conversation' + new Date().toLocaleString()
+                });
+
+            }
+
+            const response_message: ConversationMessage = await api.create(`conversation/${conversation_id}/messages`, message);
+
+            set((state) => ({ messages: [...state.messages, response_message], currentConverstationId: conversation_id, wait_for_server: false }));
+            if (newConversation) {
+                get().fetchAllConversations();
+            }
         }
         catch (error) {
             console.log('Failed to send message');

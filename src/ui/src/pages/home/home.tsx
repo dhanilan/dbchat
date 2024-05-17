@@ -3,6 +3,7 @@ import { Container, Row, Col, Form, Button, Dropdown, DropdownButton } from 'rea
 import { conversationStore } from '../../store/chatConversationStore';
 
 import { connectionsStore } from '../../store/connectionsStore';
+import { appSettingStore } from '../../store/appSettingStore';
 const Home: React.FC = () => {
 
     const store = conversationStore();
@@ -11,10 +12,15 @@ const Home: React.FC = () => {
     const messages = store.messages;
     const connectionStore = connectionsStore()
     const [currentConnection, setCurrentConnection] = useState(connectionStore.connection);
+    const appSettings = appSettingStore();
 
     const onMessageChange = (event: any) => {
         setMessage(event.target.value);
     }
+
+    useEffect(() => {
+        appSettings.getAppSetting();
+    }, [])
 
     useEffect(() => {
         setCurrentConnection(connectionStore.connection)
@@ -29,10 +35,32 @@ const Home: React.FC = () => {
             sender: 'User',
             isUser: true,
             timestamp: new Date(),
-        });
+        }, currentConnection?.id || '');
         event.preventDefault();
 
     }
+    if (connectionStore.connections.length === 0 || !appSettings?.appSetting?.oai_api_key) {
+        return (
+            <Container>
+                <Row>
+                    <Col xl={12} className='pb-4'>
+
+                        <h3>Ask what you what to know about your data </h3>
+
+                    </Col>
+                    <Col xl={12} className='pb-4'>
+
+                        {connectionStore.connections.length === 0 ? <p>No connections available. Click <a href='/connections'>here</a> to add a connection
+                        </p> : null}
+
+                        {!appSettings?.appSetting?.oai_api_key ? <p>No API key set. Click <a href='/settings'>here</a> to set your API key</p> : null}
+
+                    </Col>
+                </Row>
+            </Container>
+        )
+    }
+
     return (
         <>
             <Container>
@@ -40,7 +68,7 @@ const Home: React.FC = () => {
 
                 <Row>
                     <Col xl={12} className='pb-4'>
-                        <h1>Chat with us</h1>
+
                         <h3>Ask what you what to know about your data </h3>
                         <DropdownButton
 
