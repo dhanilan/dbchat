@@ -71,6 +71,7 @@ def get_sql_executor_tool(schema: Schema,connection_string:str):
 
             return result_as_string
         except Exception as e:
+            log_exception_from_llm(query,traceback.format_exc())
             return "error occured durring execution" + str(e)
     return sql_executor_tool
 
@@ -96,8 +97,9 @@ def build_schema_prompt(schema: Schema):
 ReAct_prompt = """
 You are an Analytics Expert that can help answer questions by looking at the data inside the database. Answer the following questions as best you can. You have access to tools provided.
 
-The following is the schema of the database:
-{schema_description}
+
+Suggestions:
+    if there are multiple tables it is always a good idea to join them to get the required information.
 
 Use the following format:
 
@@ -133,13 +135,9 @@ def getUserProxyAgent():
     return user_proxy
 
 
-def getAssistantAgent(config_list):
-    assistant = AssistantAgent(
-        name="Assistant",
-
-        system_message="""
+def getAssistantAgent(config_list,schema):
+    system_message = """
         Only use the tools you have been provided with. Reply TERMINATE when the task is done.Reply MORE_INFO_NEEDED if you need more information along with the question to the user.
-
     You will follow these rules while creating a json response:
     1. The json response will only contain the below listed keys
     2. `table` key will contain the name of the table to fetch the data from
@@ -148,7 +146,6 @@ def getAssistantAgent(config_list):
             3.b. `table` - Name of the table to join with
             3.c. `field` - Field of the current table to join with
             3.d. `related_field` - Field of the joined table to join with
-
     3. `fields` key will contain the list of fields to fetch from the chosen table.Join fields are represented `join alias`.`field` . Fields of each table will be listed in a separate list after the rules. Join fields will be listed in the same list as the table fields.
     4. `filters` key will contain the list of filters to apply to the query. Each filter will have a 'field', 'operator' and 'value'. Allowed operators are 'eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'
     5. `sort` -  will  have a 'field' and 'direction'.
@@ -156,7 +153,20 @@ def getAssistantAgent(config_list):
         4.b. `direction` - Allowed direction are 'asc' and 'desc'.
     6. `limit` key will contain the number of rows to limit the result to
     7. `offset` key will contain the number of rows to offset the result by
-    """,
+    8. You will join the tables to get the required information if information is available across multiple tables.
+    9. You will only use the fields that are available in the tables.
+    10. You will only use the filters that are available in the tables.
+    11. You will only use the sort fields that are available in the tables.
+
+    Very Important : You will return the JSON only without any additional information.or comments.
+    """
+    # add some sample schema and responses here.
+    schema_description = build_schema_prompt(schema)
+    system_message+=f"The following is the schema of the database: \n {schema_description}"
+    assistant = AssistantAgent(
+        name="Assistant",
+
+        system_message=system_message,
         llm_config={"config_list": config_list, "cache_seed": None},
     )
     return assistant
@@ -176,7 +186,7 @@ def register_agent(assistant,user_proxy,schema, connection_string):
 
 def ask_llm(question:str, schema:Schema,api_key:str,connection_string:str=None):
     config_list = [{"model": "gpt-4-1106-preview", "api_key": api_key}]
-    assistant = getAssistantAgent(config_list)
+    assistant = getAssistantAgent(config_list,schema)
     user_proxy = getUserProxyAgent()
     register_agent(assistant,user_proxy,schema,connection_string)
     # with Cache.disk(cache_seed=45) as cache:

@@ -5,13 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 import dataclasses
 
+from pydantic import BaseModel
 from sqlalchemy import MetaData, create_engine
 
 from db_chat.sql_builder.Query import Expression, Query
 
 
-@dataclass
-class Schema:
+
+class Schema(BaseModel):
     """
     Schema
     """
@@ -20,8 +21,8 @@ class Schema:
     relationships: list[Relationship]
 
 
-@dataclass
-class Table:
+
+class Table(BaseModel):
     """
     Table
     """
@@ -31,20 +32,20 @@ class Table:
     columns: list[Column]
 
 
-@dataclass
-class Column:
+
+class Column(BaseModel):
     """
     Column
     """
 
     friendly_name: str
     name: str
-    relationships: list[str] = dataclasses.field(default_factory=lambda: [])
+    relationships: list[str] = []
     related_field: str|None = None
 
 
-@dataclasses.dataclass
-class Relationship:
+
+class Relationship(BaseModel):
     """
     Class to hold a relationship between two tables
     """

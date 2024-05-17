@@ -27,6 +27,7 @@ class SQLAlchemyQueryBuilder:
     sa_table: TableClause
     joined_paths: list[str] = []
     joined_tables: dict[str] = {}
+    labeled_columns: dict[str] = {}
     select_columns: list = []
 
     def __init__(self, schema: Schema):
@@ -41,7 +42,8 @@ class SQLAlchemyQueryBuilder:
         if query.table not in self.schema.tables:
             validation_errors.append(ValidationError(message= f"Table {query.table} not found in schema"))
 
-        for join in query.joins:
+        for join_key in query.joins:
+            join = query.joins[join_key]
             if join.table not in self.schema.tables:
                 validation_errors.append(ValidationError(message= f"Table {join.table} not found in schema"))
 
@@ -51,23 +53,46 @@ class SQLAlchemyQueryBuilder:
                     validation_errors.append(ValidationError(message= f"Field {filter_obj.field} not found in table {query.table}"))
 
         for group_by_field in query.group_by:
-            if not self._is_field_of_table(group_by_field, query.table):
-                validation_errors.append(ValidationError(message= f"Field {group_by_field} not found in table {query.table}"))
+            validation_errors.extend( self.validate_field(group_by_field, query))
 
         for field in query.fields:
             if self._is_expression(field):
                 for param in field.parameters:
                     if not self._is_expression(param):
-                        if not self._is_field_of_table(param, query.table):
-                            validation_errors.append(ValidationError(message= f"Field {param} not found in table {query.table}"))
+                        validation_errors.extend( self.validate_field(param, query))
 
                 field.func = field.func.upper()
                 if field.func not in [func.value for func in Functions]:
                     validation_errors.append(ValidationError(message= f"Invalid function {field.func}"))
             else:
-                if not self._is_field_of_table(field, query.table):
-                    validation_errors.append(ValidationError(message= f"Field {field} not found in table {query.table}"))
+                validation_errors.extend(self.validate_field(field, query))
 
+        return validation_errors
+
+    def validate_field(self, field:str,query:Query):
+        """
+        Validate the field
+        """
+        validation_errors:list[ValidationError] = []
+        if not self._is_expression(field):
+
+            if "." in field:
+                # check if the field is a joined field
+                join_key, field_name = field.split(".")
+                join_table = query.joins.get(join_key)
+
+
+
+                if join_table is None and join_key != query.table:
+                    validation_errors.append(ValidationError(message= f"Join {join_key} not found in query"))
+                elif join_key == query.table:
+                    if not self._is_field_of_table(field_name, query.table):
+                        validation_errors.append(ValidationError(message= f"Field {field_name} not found in table {query.table}"))
+                elif not self._is_field_of_table(field_name, join_table.table):
+                    validation_errors.append(ValidationError(message= f"Field {field_name} not found in table {join_table.table}"))
+
+            elif not self._is_field_of_table(field, query.table):
+                validation_errors.append(ValidationError(message= f"Field {field} not found in table {query.table}"))
         return validation_errors
 
     def build_query(self, query: Query):
@@ -103,6 +128,13 @@ class SQLAlchemyQueryBuilder:
         # # OFFSET clause
         # sql = self._build_offset_clause(offset, sql)
 
+        if query.offset is not None:
+            statement = statement.offset(query.offset)
+
+        if query.limit is not None:
+            statement = statement.limit(query.limit)
+
+
         sql = str(statement.compile(compile_kwargs={"literal_binds": True}))
         print(sql)
         return sql
@@ -137,6 +169,10 @@ class SQLAlchemyQueryBuilder:
         if sa_having_clauses and len(sa_having_clauses) > 0:
             statement = statement.having(and_(*sa_having_clauses))
 
+        if self.query.sort is not None:
+            sort_column = self._build_order_by_clause(self.query, self.sa_table, self.joined_paths, self.joined_tables, from_clause, self.select_columns,statement)
+            statement = statement.order_by(sort_column.desc() if self.query.sort.direction == "desc" else sort_column.asc())
+
         return statement
 
     def _build_joins(self):
@@ -167,7 +203,10 @@ class SQLAlchemyQueryBuilder:
         for group_by_field in query.group_by:
             group_by_column = self._get_field_from_table(query.table, group_by_field)
 
-            if not group_by_column.relationships:
+            if isinstance(group_by_column, ColumnClause):
+                group_by_columns.append(group_by_column)
+                continue
+            if isinstance(group_by_column,Column):
                 sa_grouping_column = sa_table.columns.get(group_by_column.name)
             else:
                 from_clause, join_to_aliased_table = self._build_join_for_relationship(
@@ -187,6 +226,30 @@ class SQLAlchemyQueryBuilder:
                 group_by_columns.append(select_column)
 
         return from_clause, group_by_columns
+
+    def _build_order_by_clause(self, query: Query, sa_table: TableClause, joined_paths, joined_tables, from_clause, select_columns,statement):
+        """
+        Build the ORDER BY clause
+        """
+
+        if query.sort is None:
+            return None
+
+        sort_column = self._get_field_from_table(query.table, query.sort.field)
+
+        if isinstance(sort_column, ColumnClause):
+            return sort_column
+
+        if isinstance(sort_column,Column):
+            sa_sort_column = sa_table.columns.get(sort_column.name)
+            return sa_sort_column
+        else:
+            sort_column = self.labeled_columns[query.sort.field]
+            if sort_column is not None:
+                return sort_column
+
+        raise ValueError(f"Field {query.sort.field} not found in table or its joined tables")
+
 
     def _is_sa_column_aggregate(self, select_column):
         return isinstance(select_column, Label) and isinstance(select_column.element, func.sum().__class__)
@@ -325,8 +388,13 @@ class SQLAlchemyQueryBuilder:
                 # if not a expression check if it is a field of the table
                 is_field_of_table = self._is_field_of_table(func_param, query.table)
                 if is_field_of_table:
+
                     field_column = self._get_field_from_table(query.table, func_param)
-                    if not field_column.relationships:
+
+                    if isinstance(field_column, ColumnClause):
+                        function_parms.append(field_column)
+                        continue
+                    if isinstance(field_column,Column):
                         function_parms.append(sa_table.columns.get(field_column.name))
                     else:
                         from_clause, join_to_aliased_table = self._build_join_for_relationship(
@@ -370,6 +438,7 @@ class SQLAlchemyQueryBuilder:
 
         if label:
             sa_function = sa_function.label(label)
+            self.labeled_columns[label]  =  sa_function
 
         return sa_function
 
@@ -442,10 +511,18 @@ class SQLAlchemyQueryBuilder:
     def _get_relationship_by_name(self, relationship_name):
         return next((rel for rel in self.schema.relationships if rel.name == relationship_name), None)
 
-    def _get_field_from_table(self, table_name, field_name: str):
-        if "." in field_name:
+    def _get_field_from_table(self, table_name, field_name: str,skip_joined_tables=False):
+        if "." in field_name and not skip_joined_tables:
             table_name, field_name = field_name.split(".")
-            return self.joined_tables[table_name].columns.get(field_name)
+
+            joined_table = self.joined_tables.get(table_name,None)
+            if joined_table is not None:
+                joined_field = joined_table.columns.get(field_name)
+            elif table_name == self.query.table:
+                return self._get_table_from_mapping(self.query.table).columns.get(field_name,None)
+            else:
+                raise ValueError(f"Field {field_name} not found in table {table_name}")
+            return joined_field
         return next(
             (c for c in self.schema.tables[table_name].columns if c.name == field_name),
             None,
