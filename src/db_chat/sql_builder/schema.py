@@ -130,40 +130,40 @@ def build_schema(connection_string: str) -> Schema:
     for table_name in schema.tables:
         table_columns[table_name] = [column for column in schema.tables[table_name].columns]
 
-    for relationship in schema.relationships:
-        table1 = schema.tables[relationship.table1]
-        table2 = schema.tables[relationship.table2]
+    # for relationship in schema.relationships:
+    #     table1 = schema.tables[relationship.table1]
+    #     table2 = schema.tables[relationship.table2]
 
-        column: Column
-        for column in table_columns[relationship.table1]:
-            if column.name in [col.name for col in table2.columns]:
-                column_name = f"{relationship.name}_{column.name}"
-                friendly_name = f"{relationship.name}_{column.friendly_name}"
-            else:
-                column_name = column.name
-                friendly_name = column.friendly_name
-            new_column = Column(
-                friendly_name=friendly_name,
-                name=column_name,
-                relationships=[relationship.name],
-                related_field=column.name,
-            )
-            table2.columns.append(new_column)
+    #     column: Column
+    #     for column in table_columns[relationship.table1]:
+    #         if column.name in [col.name for col in table2.columns]:
+    #             column_name = f"{relationship.name}_{column.name}"
+    #             friendly_name = f"{relationship.name}_{column.friendly_name}"
+    #         else:
+    #             column_name = column.name
+    #             friendly_name = column.friendly_name
+    #         new_column = Column(
+    #             friendly_name=friendly_name,
+    #             name=column_name,
+    #             relationships=[relationship.name],
+    #             related_field=column.name,
+    #         )
+    #         table2.columns.append(new_column)
 
-        for column in table_columns[relationship.table2]:
-            if column.name in [col.name for col in table1.columns]:
-                column_name = f"{relationship.name}_{column.name}"
-                friendly_name = f"{relationship.name}_{column.friendly_name}"
-            else:
-                column_name = column.name
-                friendly_name = column.friendly_name
+    #     for column in table_columns[relationship.table2]:
+    #         if column.name in [col.name for col in table1.columns]:
+    #             column_name = f"{relationship.name}_{column.name}"
+    #             friendly_name = f"{relationship.name}_{column.friendly_name}"
+    #         else:
+    #             column_name = column.name
+    #             friendly_name = column.friendly_name
 
-            new_column = Column(
-                friendly_name=friendly_name,
-                name=column_name,
-                relationships=[relationship.name],
-                related_field=column.name,
-            )
-            table1.columns.append(new_column)
+    #         new_column = Column(
+    #             friendly_name=friendly_name,
+    #             name=column_name,
+    #             relationships=[relationship.name],
+    #             related_field=column.name,
+    #         )
+    #         table1.columns.append(new_column)
 
     return schema

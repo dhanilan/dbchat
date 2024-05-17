@@ -137,7 +137,26 @@ def getAssistantAgent(config_list):
     assistant = AssistantAgent(
         name="Assistant",
 
-        system_message="Only use the tools you have been provided with. Reply TERMINATE when the task is done.Reply MORE_INFO_NEEDED if you need more information along with the question to the user.",
+        system_message="""
+        Only use the tools you have been provided with. Reply TERMINATE when the task is done.Reply MORE_INFO_NEEDED if you need more information along with the question to the user.
+
+    You will follow these rules while creating a json response:
+    1. The json response will only contain the below listed keys
+    2. `table` key will contain the name of the table to fetch the data from
+    3. `joins` - dictionary of joins to apply to the query, where key is the alias of join. Each join will have the following keys
+            3.a. `type` -  Allowed values are `inner`, `left`, `right`, `full`
+            3.b. `table` - Name of the table to join with
+            3.c. `field` - Field of the current table to join with
+            3.d. `related_field` - Field of the joined table to join with
+
+    3. `fields` key will contain the list of fields to fetch from the chosen table.Join fields are represented `join alias`.`field` . Fields of each table will be listed in a separate list after the rules. Join fields will be listed in the same list as the table fields.
+    4. `filters` key will contain the list of filters to apply to the query. Each filter will have a 'field', 'operator' and 'value'. Allowed operators are 'eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'
+    5. `sort` -  will  have a 'field' and 'direction'.
+        4.a. `field` - Field to sort to sort by. Use columns from the chosen `table` only . Do not make up new columns.
+        4.b. `direction` - Allowed direction are 'asc' and 'desc'.
+    6. `limit` key will contain the number of rows to limit the result to
+    7. `offset` key will contain the number of rows to offset the result by
+    """,
         llm_config={"config_list": config_list, "cache_seed": None},
     )
     return assistant

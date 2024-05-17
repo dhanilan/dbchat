@@ -66,25 +66,30 @@ async def create_conversation_message(conversation_message: ConversationMessage,
 
 
 
-#     import json
-#     query = json.loads("""{
+    import json
+    query = json.loads("""
+  {
+    "table": "artist",
+    "fields": [
+      "name",
+      {
+        "func": "COUNT",
+        "parameters": ["title"],
+        "alias": "title_count"
+      }
+    ],
+    "group_by": ["name"],
+    "sort": {
+      "field": "title_count",
+      "direction": "DESC"
+    },
+    "limit": 1
+  }
 
-#     "table": "genre",
-#     "fields": [
-#       "genre_id"
-#     ],
-#     "filters": [
-#       {
-#         "field": "name",
-#         "operator": "like",
-#         "value": "Pop"
-#       }
-#     ]
-
-# }""")
-#     result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
-#     print(result)
-#     return result
+    """)
+    # result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
+    # print(result)
+    # return result
 #     raise "Not implemented yet."
 
     if (app_settings is None or app_settings.oai_api_key is None or  app_settings.oai_api_key == ""):
