@@ -103,7 +103,7 @@ class SQLAlchemyQueryBuilder:
         # # OFFSET clause
         # sql = self._build_offset_clause(offset, sql)
 
-        sql = str(statement.compile())
+        sql = str(statement.compile(compile_kwargs={"literal_binds": True}))
         print(sql)
         return sql
 

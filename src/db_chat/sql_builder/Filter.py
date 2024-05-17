@@ -2,6 +2,7 @@
 Filter Class
 """
 import dataclasses
+from typing import List
 
 from db_chat.sql_builder.FilterOperator import FilterOperator
 
@@ -14,4 +15,4 @@ class Filter:
 
     field: any
     operator: FilterOperator
-    value: str
+    value: str|int|float|List[str|int|float]

@@ -26,7 +26,10 @@ def log_exception_from_llm(query:Query,exception: str):
     with open("llm_exceptions.txt", "a") as f:
         f.write("==============================: \n")
         f.write("Exception occured for query: \n")
-        f.write(""+  json.dumps( query) + "\n")
+        if isinstance(query,Query):
+            f.write(""+   query.model_dump_json() + "\n")
+        else:
+            f.write(""+  json.dumps( query) + "\n")
         f.write("Exception is: " + "\n")
         f.write(exception + "\n")
 

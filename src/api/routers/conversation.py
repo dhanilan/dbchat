@@ -66,13 +66,26 @@ async def create_conversation_message(conversation_message: ConversationMessage,
 
 
 
-    # import json
-    # query = json.loads('{"table":"employee","fields":[{"func":"COUNT","parameters":["employee_id"],"alias":"IT_Staff_Count"}],"filters":[{"field":"title","operator":"like","value":"%IT%"}]}')
+#     import json
+#     query = json.loads("""{
 
-    # result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
-    # print(result)
-    # return result
-    # raise "Not implemented yet."
+#     "table": "genre",
+#     "fields": [
+#       "genre_id"
+#     ],
+#     "filters": [
+#       {
+#         "field": "name",
+#         "operator": "like",
+#         "value": "Pop"
+#       }
+#     ]
+
+# }""")
+#     result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
+#     print(result)
+#     return result
+#     raise "Not implemented yet."
 
     if (app_settings is None or app_settings.oai_api_key is None or  app_settings.oai_api_key == ""):
         response = ConversationMessage(
