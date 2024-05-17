@@ -66,14 +66,37 @@ async def create_conversation_message(conversation_message: ConversationMessage,
 
 
 
-#     import json
-#     query = json.loads("""
-#   {"table":"artist","fields":["name",{"func":"count","parameters":["album.album_id"],"alias":"total_albums"}],"filters":[],"group_by":["artist.artist_id","artist.name"],"sort":{"field":"total_albums","direction":"desc"},"limit":1,"offset":0,"joins":{"album":{"table":"album","field":"artist_id","related_field":"artist_id","join_type":"JOIN"}}}
-
-#     """)
-#     result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
-#     print(result)
-#     return result
+    import json
+    query = json.loads("""
+ {
+  "table": "invoice",
+  "fields": [
+    "customer_id",
+    {
+      "func": "sum",
+      "parameters": ["total"],
+      "alias": "total_amount"
+    }
+  ],
+  "joins": {
+    "customer": {
+      "type": "inner",
+      "table": "customer",
+      "field": "customer_id",
+      "related_field": "customer_id"
+    }
+  },
+  "group_by": ["customer_id"],
+  "sort": {
+    "field": "total_amount",
+    "direction": "desc"
+  },
+  "limit": 1
+}
+    """)
+    # result = get_sql_executor_tool(connection.connection_schema,connection.connection_string)(query)
+    # print(result)
+    # return result
 #     raise "Not implemented yet."
 
     if (app_settings is None or app_settings.oai_api_key is None or  app_settings.oai_api_key == ""):

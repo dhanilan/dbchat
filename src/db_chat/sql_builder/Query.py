@@ -42,7 +42,7 @@ class Filter(BaseModel):
 
     field: str
     operator: FilterOperator
-    value: str
+    value: str|int|float|list[str|int|float]|any
 
 
 class Functions(str, Enum):

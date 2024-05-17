@@ -207,7 +207,11 @@ class SQLAlchemyQueryBuilder:
                 group_by_columns.append(group_by_column)
                 continue
             if isinstance(group_by_column,Column):
-                sa_grouping_column = sa_table.columns.get(group_by_column.name)
+                for column in sa_table.columns:
+                    if column.name == group_by_column.name:
+                        sa_grouping_column = column
+                        continue
+                #
             else:
                 from_clause, join_to_aliased_table = self._build_join_for_relationship(
                     sa_table, from_clause, joined_paths, joined_tables, group_by_column, query.table, query.table
@@ -395,7 +399,10 @@ class SQLAlchemyQueryBuilder:
                         function_parms.append(field_column)
                         continue
                     if isinstance(field_column,Column):
-                        function_parms.append(sa_table.columns.get(field_column.name))
+                        for column in sa_table.columns:
+                            if column.name == field_column.name:
+                                function_parms.append(column)
+                                continue
                     else:
                         from_clause, join_to_aliased_table = self._build_join_for_relationship(
                             sa_table,
