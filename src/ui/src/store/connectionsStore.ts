@@ -72,9 +72,10 @@ export const connectionsStore = create<ConnectionsStoreType>((set, get, _) => ({
         // set({ loading: true });
 
         const new_connection = {
-            name: 'new connection ' + get().connections.length + 1,
-            connection_string: connection.connection_string,
-            customer_id: connection.customer_id
+            name: 'new connection ' + (get().connections.length + 1),
+            connection_string: '',
+            customer_id: connection.customer_id,
+            connection_schema: {}
         }
 
         set({ connection: new_connection })
