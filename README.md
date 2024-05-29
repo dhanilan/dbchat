@@ -88,3 +88,4 @@ Goto setting to save the OPEN AI API key
 - [ ] add few shots of the conversation to the schema
 - [ ] add feature to add custom prompts
 - [ ] add access control for tables and columns
+`
