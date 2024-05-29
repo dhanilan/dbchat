@@ -1,9 +1,11 @@
+from api.models.model_map import CONST_TABLE_NAME_APP_SETTINGS
 from fastapi import Depends, FastAPI
 
-from api.dependencies import get_query_token, get_token_header
+from api.dependencies import get_query_token, get_token_header, getRepository
 from api.internal import admin
 from api.routers import items, users,settings,conversation,connections
 from fastapi.middleware.cors import CORSMiddleware
+from api.settings import settings as config_settings
 
 
 def ini_app():
@@ -31,6 +33,12 @@ def ini_app():
         dependencies=[Depends(get_token_header)],
         responses={418: {"description": "I'm a teapot"}},
     )
+
+    # check if the db connection is working
+    print("Checking DB Connection")
+    print(config_settings.db_url)
+    repo = getRepository(CONST_TABLE_NAME_APP_SETTINGS,config_settings)
+    repo.get_one_by_model({"customer_id":"default"})
 
 
     @app.get("/")

@@ -1,0 +1,1 @@
+cd src/ui && npm run dev -- --host

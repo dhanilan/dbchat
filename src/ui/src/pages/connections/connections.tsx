@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import { Container, Form, Button, Dropdown, DropdownButton, InputGroup } from 'react-bootstrap';
 import { Connection, connectionsStore } from '../../store/connectionsStore';
-import { JsonEditor as Editor } from 'jsoneditor-react';
-import 'jsoneditor-react/es/editor.min.css';
+// import { JsonEditor as Editor } from 'jsoneditor-react';
+// import 'jsoneditor-react/es/editor.min.css';
 
 interface SettingsProps {
     // Define your props here
