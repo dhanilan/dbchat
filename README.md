@@ -82,8 +82,9 @@ Goto setting to save the OPEN AI API key
 
 
 ## Roadmap
-- [ ] Complete image as docker and run ui and backend
-- [ ] fix bug of connections
-- [ ] Test for mysql , pg and sqllite etc
-- [ ] put a nice readme with how it works
 - [ ] clean up some code for now
+- [ ] Add more tests
+- [ ] add feature to annotate the schema
+- [ ] add few shots of the conversation to the schema
+- [ ] add feature to add custom prompts
+- [ ] add access control for tables and columns
