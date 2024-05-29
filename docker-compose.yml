@@ -8,6 +8,7 @@ services:
       - "5173:5173"
     environment:
       - DB_URL=mongodb://host.docker.internal:27019/dbchat
+      - ATTACH_SPIDER_DATASET=1
     depends_on:
       - mongo
       - postgres
