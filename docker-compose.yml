@@ -8,6 +8,9 @@ services:
       - "5173:5173"
     environment:
       - DB_URL=mongodb://host.docker.internal:27019/dbchat
+    depends_on:
+      - mongo
+      - postgres
   mongo:
     image: mongo:latest
     ports:

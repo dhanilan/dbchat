@@ -26,17 +26,20 @@ const Menu: React.FC<MenuProps> = ({ items }) => {
         setfirstConnection(connections && connections.length ? connections[0]?.id || '' : '');
     }, [connections]);
 
+    const navigate = useNavigate();
+
     const onCreateConversation = async () => {
         if (firstConnection && firstConnection) {
             await store.createConversation(firstConnection ?? '', 'New Conversation',);
-
+            navigate(`/`);
+            await store.fetchAllConversations();
         }
         else {
             alert('Please add a connection first');
         }
     }
 
-    const navigate = useNavigate();
+
 
     const handleItemClick = (id: string) => {
         store.initialize(id);
