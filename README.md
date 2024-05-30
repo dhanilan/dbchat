@@ -20,14 +20,14 @@ default  database to save connections and conversation is mongo at `mongodb://lo
 
 if you want to save them at specific mongo database pass it as an env
 ```
-docker run  -p 5173:5173 -p 8000:8000 -e DB_URL=mongodb://localhost:27017/dbchat dhanilan/dbchat
+docker run  -p 5173:5173 -p 8000:8000 -e DB_URL=mongodb://host.docker.internal:27017/dbchat dhanilan/dbchat
 
 ```
 
 if you want to run spider dataset from https://yale-lily.github.io/spider
 
 ```
-docker run  -p 5173:5173 -p 8000:8000 -e DB_URL=mongodb://localhost:27017/dbchat -e ATTACH_SPIDER_DATASET=1 dhanilan/dbchat
+docker run  -p 5173:5173 -p 8000:8000 -e DB_URL=mongodb://host.docker.internal:27017/dbchat -e ATTACH_SPIDER_DATASET=1 dhanilan/dbchat
 
 ```
 
