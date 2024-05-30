@@ -1,5 +1,5 @@
 # DBChat
-An agentic AI application for chatting with existing databases
+An agentic AI application for chatting with existing relational databases
 
 # Features
 - Uses an Agentic approach to answer to user's question
